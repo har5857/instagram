@@ -30,14 +30,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: [GENDER.MALE, GENDER.FEMALE, GENDER.OTHER],
   },
-  followers: {
-    type: Number,
-    default: 0,
-  },
-  following: {
-    type: Number,
-    default: 0,
-  },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+}],
+following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+}],
   posts: {
     type: Number,
     default: 0,

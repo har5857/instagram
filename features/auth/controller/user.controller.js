@@ -45,7 +45,6 @@ class UserController {
         }
     }
 
-    
     // static async getAllUser(req, res) {
     //     try {
     //         let userList = await userService.getAllUsers({ isDelete: false });
@@ -191,7 +190,7 @@ class UserController {
             console.log('Token received:', token); 
             const decoded = jwt.verify(token, config.jwtSecret);
             console.log('Decoded token:', decoded); 
-            
+
             const user = await userService.getUserById(decoded.userId);
             if (!user) {
                 return res.status(404).json({ message: 'User not found.' });
