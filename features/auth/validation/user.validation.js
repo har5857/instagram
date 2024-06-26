@@ -31,8 +31,17 @@ export const update = Joi.object({
 
 export const login = Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
+    password: Joi.string().min(6).required()
 });
+
+export const changePassword = Joi.object({
+    currentPassword: Joi.string().required(),
+    newPassword: Joi.string().min(6).required().invalid(Joi.ref('currentPassword')).messages({
+        'any.invalid': 'New password must not be the same as current password',
+    })
+});
+
+
 
 const validate = (schema) => (req, res, next) => {
     const { error } = schema.validate(req.body,{ abortEarly: false });
@@ -46,3 +55,5 @@ const validate = (schema) => (req, res, next) => {
 export const validateRegistration = validate(register);
 export const validateUpdate = validate(update);
 export const validateLogin = validate(login);
+export const validatechangePassword = validate(changePassword);
+

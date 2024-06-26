@@ -3,10 +3,15 @@ dotenv.config();
 
 const env = {
     database: {
-        url: process.env.MONGO_DB_URL
+      url: process.env.MONGO_DB_URL,
     },
     jwtSecret: process.env.JWT_SECRET,
-    port: process.env.PORT
-};
+    port: process.env.PORT,
+    email: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+      service: process.env.EMAIL_SERVICE,
+    },
+  };
 
 export default env;

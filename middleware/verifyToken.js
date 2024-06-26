@@ -10,16 +10,16 @@ export const userVerifyToken = async (req, res, next) => {
     const token = authHeader.replace('Bearer ', '');
     try {
         const verified = jwt.verify(token, env.jwtSecret);
-        
+
         const user = await User.findById(verified.userId);
         if (!user) {
-            return res.status(401).json({ message: 'user is not in database' });
+            return res.status(401).json({ message: 'User not found in database' });
         }
-        req.user = user;
+        req.user = user; 
         next();
     } catch (error) {
-        console.error(error);
-        res.status(400).json({ message: 'Invalid Token' });
+        console.error('Error verifying token:', error);
+        return res.status(400).json({ message: 'Invalid Token' });
     }
 };
 
