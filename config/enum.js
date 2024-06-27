@@ -4,4 +4,14 @@ const GENDER = {
     OTHER: 'Other',
 };
 
-export { GENDER };
+ const userRoles = {
+    USER: 'USER',
+    ADMIN: 'ADMIN',
+    MODERATOR: 'MODERATOR',
+    CREATOR: 'CREATOR',
+    GUEST: 'GUEST',
+    ANALYST: 'ANALYST',
+    ADVERTISER: 'ADVERTISER'
+};
+
+export { GENDER , userRoles};

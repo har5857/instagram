@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { GENDER } from '../../../config/enum.js';
+import { GENDER , userRoles } from '../../../config/enum.js';
 
 const userSchema = new mongoose.Schema({
   userName: {
@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
+    required: true,
   },
   profilePicture: {
     type: String,
@@ -38,14 +39,18 @@ following: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
 }],
-  posts: {
-    type: Number,
-    default: 0,
-  },
+posts: [{
+   type: String,  
+}],
   accountPrivate: {
     type: Boolean,
     default: false,
     select: false,
+  },
+  role: {
+    type: String,
+    enum: Object.values(userRoles),
+    default: userRoles.USER,
   },
   isDelete: {
     type: Boolean,
@@ -63,3 +68,4 @@ following: [{
 const User = mongoose.model('User', userSchema);
 
 export default User;
+

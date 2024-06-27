@@ -37,11 +37,19 @@ class UserService {
     //     }
     // }
 
-    async getAllUsers(filter, page, limit) {
+    async getAllUsers(filter, skip, limit) {
         try {
-            const users = await User.find(filter).skip((page - 1) * limit).limit(limit);                       
-            const totalUsers = await User.countDocuments(filter);
-            return { users, totalUsers };
+            const users = await User.find(filter).skip(skip).limit(limit);
+            return { users, totalUsers: await User.countDocuments(filter) };
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+    
+    async countUsers(filter) {
+        try {
+            return await User.countDocuments(filter);
         } catch (error) {
             console.error(error);
             throw error;

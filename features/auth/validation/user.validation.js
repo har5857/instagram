@@ -10,6 +10,7 @@ export const register = Joi.object({
     bio: Joi.string().optional(),
     DOB: Joi.date().optional(),
     gender: Joi.string().valid('Male', 'Female', 'Other').optional(),
+    role: Joi.string().valid('USER', 'ADMIN', 'MODERATOR', 'CREATOR', 'GUEST', 'ANALYST', 'ADVERTISER').optional(),
 });
 
 export const update = Joi.object({
@@ -41,13 +42,19 @@ export const changePassword = Joi.object({
     })
 });
 
-
-
 const validate = (schema) => (req, res, next) => {
-    const { error } = schema.validate(req.body,{ abortEarly: false });
+    const { error } = schema.validate(req.body, { abortEarly: false });
     if (error) {
-        const formattedErrors = error.details.map(err => err.message);
-        return res.status(400).json({ error: formattedErrors });
+        const formattedErrors = {};
+        error.details.forEach(err => {
+            formattedErrors[err.context.label] = err.message.replace(/"/g, '');
+        });
+
+        return res.status(400).json({ 
+            message: "error",
+            success: false,
+            ...formattedErrors
+        });
     }
     next();
 };
