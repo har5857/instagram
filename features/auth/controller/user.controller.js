@@ -7,6 +7,7 @@ import { sendResetEmail } from '../../../helper/email.js';
 const userService = new UserService();
 
 class UserController {
+    //Register user
     static async registerUser(req, res) {
         try {
             let user = await userService.getUser({ email: req.body.email });
@@ -24,34 +25,7 @@ class UserController {
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
     }
-
-    // static async registerUser(req, res) {
-    //     try {
-    //         const { email, password, role, ...rest } = req.body;
-    //         let existingUser = await userService.getUser({ email });
-    //         if (existingUser) {
-    //             return res.status(400).json({ success: false, message: 'User already registered' });
-    //         }
-    //         const hashedPassword = await bcrypt.hash(password, 10);
-    //         let userRole = 'USER';
-    //         console.log('Initial userRole:', userRole); 
-    //         console.log('Logged in user:', req.user); 
-    //         if (req.user && req.user.role === 'ADMIN' && role && ['USER', 'ADMIN', 'MODERATOR', 'CREATOR', 'GUEST', 'ANALYST', 'ADVERTISER'].includes(role)) {
-    //             userRole = role;
-    //         }
-    //         const newUser = await userService.addNewUser({
-    //             email,
-    //             password: hashedPassword,
-    //             role: userRole,
-    //             ...rest
-    //         });
-    //         res.status(201).json({ success: true, message: 'User registered successfully', data: newUser });
-    //     } catch (error) {
-    //         console.error('Error registering user:', error);
-    //         res.status(500).json({ success: false, message: 'Internal Server Error' });
-    //     }
-    // }
-
+    //Login user with password
     static async loginUser(req, res) {
         try {
             let user = await userService.getUser({ email: req.body.email, isDelete: false });
@@ -70,16 +44,7 @@ class UserController {
         }
     }
 
-    // static async getAllUser(req, res) {
-    //     try {
-    //         let userList = await userService.getAllUsers({ isDelete: false });
-    //         res.status(200).json(userList);
-    //     } catch (error) {
-    //         console.log(error);
-    //         res.status(500).json({ message: `Internal Server Error...${error.message}` });
-    //     }
-    // }
-
+    //get all users
     static async getAllUser(req, res) {
         try {
             const page = parseInt(req.query.page) || 1;
@@ -105,9 +70,10 @@ class UserController {
         }
     }
     
+    //get user information
     static async getUser(req, res) {
         try {
-            const userId = req.params.userId;
+            const {userId} = req.params;
             let user = await userService.getUserById(userId);
             if (!user) {
                 return res.status(404).json({ message: 'User not found...' });
@@ -119,9 +85,10 @@ class UserController {
         }
     }
 
+    //update user information
     static async updateUser(req, res) {
         try {
-            const userId = req.params.userId;
+            const {userId} = req.params;
             let user = await userService.getUserById(userId);
             if (!user) {
                 return res.status(404).json({ message: 'User Not Found...' });
@@ -134,9 +101,10 @@ class UserController {
         }
     }
 
+    //delete user
     static async deleteUser(req, res) {
         try {
-            const userId = req.params.userId;
+            const {userId} = req.params;
             let user = await userService.getUserById(userId);
             if (!user) {
                 return res.status(404).json({ message: 'User not found...' });
@@ -149,6 +117,7 @@ class UserController {
         }
     }
 
+    //change user password
     static async changePassword(req, res) {
         try {
             const userId = req.user._id;
@@ -171,50 +140,30 @@ class UserController {
         }
     }
 
-    static async forgotPassword(req, res) {
+    //reset user password
+    static async forgotPassword(req, res){
         const { email } = req.body;
+        
         try {
-          const user = await userService.getUser({ email });
-          if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-          }
-          const resetToken = jwt.sign({ userId: user._id }, config.jwtSecret, { expiresIn: '1h' });
-          user.resetPasswordToken = resetToken;
-          user.resetPasswordExpires = Date.now() + 3600000;
-          await user.save();
+            const user = await userService.getUser({ email });
+            
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+            const resetToken = jwt.sign({ userId: user._id }, config.jwtSecret, { expiresIn: '1h' });
+            user.resetPasswordToken = resetToken;
+            user.resetPasswordExpires = Date.now() + 3600000;
+            await user.save();
     
-          await sendResetEmail(email, resetToken);
-          res.status(200).json({ success: true, message: 'Password reset email sent', resetToken });
+            await sendResetEmail(email, resetToken, user);
+    
+            res.status(200).json({ success: true, message: 'Password reset email sent', resetToken });
         } catch (error) {
-          console.error('Error sending password reset email:', error);
-          res.status(500).json({ success: false, message: 'Internal Server Error' });
+            console.error('Error sending password reset email:', error);
+            res.status(500).json({ success: false, message: 'Internal Server Error' });
         }
-      }
-
-    // static async resetPassword(req, res){
-    //     const { token, newPassword } = req.body;
-    
-    //     try {
-    //         const decoded = jwt.verify(token, 'user');
-    //         const user = await userService.getUserById(decoded.userId);
-    //         if (!user) {
-    //             return res.status(404).json({ message: 'User not found.' });
-    //         }
-    //         if (Date.now() > user.resetPasswordExpires) {
-    //             return res.status(400).json({ message: 'Token expired. Please try again.' });
-    //         }
-    //         user.password = await bcrypt.hash(newPassword, 10);
-    //         user.resetPasswordToken = undefined;
-    //         user.resetPasswordExpires = undefined;
-    //         await user.save();
-    
-    //         res.status(200).json({ message: 'Password reset successfully.' });
-    //     } catch (error) {
-    //         console.error('Error resetting password:', error);
-    //         res.status(500).json({ message: 'Internal Server Error.' });
-    //     }
-    // };
-    
+    };
+      //reset user password
     static  async resetPassword(req, res) {
         const { token, newPassword } = req.body;
         try {

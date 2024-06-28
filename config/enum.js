@@ -1,10 +1,10 @@
-const GENDER = {
+export const gender = {
     MALE: 'Male',
     FEMALE: 'Female',
     OTHER: 'Other',
 };
 
- const userRoles = {
+export const userRoles = {
     USER: 'USER',
     ADMIN: 'ADMIN',
     MODERATOR: 'MODERATOR',
@@ -14,4 +14,3 @@ const GENDER = {
     ADVERTISER: 'ADVERTISER'
 };
 
-export { GENDER , userRoles};

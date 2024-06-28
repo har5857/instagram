@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
-import { GENDER , userRoles } from '../../../config/enum.js';
+import { gender , userRoles } from '../../../config/enum.js';
 
 const userSchema = new mongoose.Schema({
   userName: {
     type: String,
+    default: null,
   },
   email: {
     type: String,
@@ -16,9 +17,11 @@ const userSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String,
+    default: null,
   },
   bio: {
     type: String,
+    default: null,
   },
   contactNumber: {
     type: Number,
@@ -26,10 +29,12 @@ const userSchema = new mongoose.Schema({
   },
   DOB: {
     type: Date,
+    default: null,
   },
   gender: {
     type: String,
-    enum: [GENDER.MALE, GENDER.FEMALE, GENDER.OTHER],
+    enum: Object.values(gender),
+    default: null,
   },
   followers: [{
     type: mongoose.Schema.Types.ObjectId,

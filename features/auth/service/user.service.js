@@ -1,6 +1,7 @@
 import User from '../model/user.model.js'; 
 
 class UserService {
+    //add user
     async addNewUser(body) {
         try {
             return await User.create(body);
@@ -10,6 +11,7 @@ class UserService {
         }
     }
 
+    //get user
     async getUser(body) {
         try {
             return await User.findOne(body);
@@ -19,6 +21,7 @@ class UserService {
         }
     }
 
+    //get user by ID
     async getUserById(id) {
         try {
             return await User.findById(id);
@@ -28,15 +31,7 @@ class UserService {
         }
     }
 
-    // async getAllUsers(query) {
-    //     try {
-    //         return await User.find(query);
-    //     } catch (error) {
-    //         console.error(error);
-    //         throw error;
-    //     }
-    // }
-
+    //get all users
     async getAllUsers(filter, skip, limit) {
         try {
             const users = await User.find(filter).skip(skip).limit(limit);
@@ -47,6 +42,7 @@ class UserService {
         }
     }
     
+    //count users
     async countUsers(filter) {
         try {
             return await User.countDocuments(filter);
@@ -56,6 +52,7 @@ class UserService {
         }
     }
 
+    //update user
     async updateUser(id, body) {
         try {
             return await User.findByIdAndUpdate(id, { $set: body }, { new: true });

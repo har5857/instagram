@@ -1,6 +1,8 @@
 // validation.js
 import Joi from 'joi';
+import { gender , userRoles } from '../../../config/enum.js';
 
+//register user
 export const register = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
@@ -9,10 +11,11 @@ export const register = Joi.object({
     profilePicture: Joi.string().optional(),
     bio: Joi.string().optional(),
     DOB: Joi.date().optional(),
-    gender: Joi.string().valid('Male', 'Female', 'Other').optional(),
-    role: Joi.string().valid('USER', 'ADMIN', 'MODERATOR', 'CREATOR', 'GUEST', 'ANALYST', 'ADVERTISER').optional(),
+    gender: Joi.string().valid(...Object.values(gender)).optional(), 
+    role: Joi.string().valid(...Object.values(userRoles)).optional(), 
 });
 
+//update user
 export const update = Joi.object({
     email: Joi.string().email().optional(),
     password: Joi.string().min(6).optional(),
@@ -21,7 +24,7 @@ export const update = Joi.object({
     profilePicture: Joi.string().optional(),
     bio: Joi.string().optional(),
     DOB: Joi.date().optional(),
-    gender: Joi.string().valid('Male', 'Female', 'Other').optional(),
+    gender: Joi.string().valid(...Object.values(gender)).optional(),
     followers: Joi.number().optional(),
     following: Joi.number().optional(),
     posts: Joi.number().optional(),
@@ -30,11 +33,13 @@ export const update = Joi.object({
     isDelete: Joi.boolean().optional(),
 });
 
+//login user
 export const login = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required()
 });
 
+//change password user
 export const changePassword = Joi.object({
     currentPassword: Joi.string().required(),
     newPassword: Joi.string().min(6).required().invalid(Joi.ref('currentPassword')).messages({
