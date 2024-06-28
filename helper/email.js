@@ -1,6 +1,11 @@
 import nodemailer from 'nodemailer';
 import ejs from 'ejs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import env from '../config/env.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const transporter = nodemailer.createTransport({
     service: env.email.service,
@@ -10,28 +15,13 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-const resetPasswordTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Password Reset Request</title>
-</head>
-<body>
-    <p>Hello <%= user.name %>,</p>
-    <p>We received a request to reset your password. Click the link below to reset your password:</p>
-    <a href="<%= resetUrl %>">Reset Password</a>
-    <p>If you did not request a password reset, please ignore this email.</p>
-    <p>Best regards,<br>Your App Team</p>
-</body>
-</html>
-`;
-
-//send mail
+// Send mail
 export const sendResetEmail = async (email, resetToken, user) => {
     try {
         const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
-        const emailTemplate = await ejs.render(resetPasswordTemplate, { user, resetUrl });
+        const templatePath = path.resolve(__dirname, '../views/resetpassword.html');
+        const emailTemplate = await ejs.renderFile(templatePath, { user, resetUrl });
+        
         const mailOptions = {
             from: env.email.user,
             to: email,

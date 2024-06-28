@@ -1,6 +1,6 @@
 // validation.js
 import Joi from 'joi';
-import { gender , userRoles } from '../../../config/enum.js';
+import { gender } from '../../../config/enum.js';
 
 //register user
 export const register = Joi.object({
@@ -11,8 +11,7 @@ export const register = Joi.object({
     profilePicture: Joi.string().optional(),
     bio: Joi.string().optional(),
     DOB: Joi.date().optional(),
-    gender: Joi.string().valid(...Object.values(gender)).optional(), 
-    role: Joi.string().valid(...Object.values(userRoles)).optional(), 
+    gender: Joi.string().valid(...Object.values(gender)).optional(),  
 });
 
 //update user

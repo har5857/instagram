@@ -23,24 +23,4 @@ export const userVerifyToken = async (req, res, next) => {
     }
 };
 
-// export const authenticateAdmin = async (req, res, next) => {
-//     const authHeader = req.header('Authorization');
-//     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-//         return res.status(401).json({ message: 'Unauthorized' });
-//     }
-//     const token = authHeader.replace('Bearer ', '');
-
-//     try {
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//         const user = await User.findById(decoded.userId);
-//         if (!user || !user.isAdmin) {
-//             return res.status(403).json({ message: 'Forbidden: Admin access required' });
-//         }
-//         req.user = user; 
-//         next();
-//     } catch (error) {
-//         console.error('Authentication failed:', error);
-//         return res.status(401).json({ message: 'Unauthorized' });
-//     }
-// };
 

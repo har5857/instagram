@@ -7,7 +7,7 @@ import { sendResetEmail } from '../../../helper/email.js';
 const userService = new UserService();
 
 class UserController {
-    //Register user
+
     static async registerUser(req, res) {
         try {
             let user = await userService.getUser({ email: req.body.email });
@@ -15,16 +15,22 @@ class UserController {
                 return res.status(400).json({ message: 'User is Already Registered...' });
             }
             let hashPassword = await bcrypt.hash(req.body.password, 10);
+            let role = 'USER'; 
+            if (req.body.email === config.adminEmail){
+                role = 'ADMIN';
+            }
             user = await userService.addNewUser({
                 ...req.body,
                 password: hashPassword,
+                role: role, 
             });
-            res.status(201).json({ success: true, message: 'New User Is Added Successfully...' , data: user});
+            res.status(201).json({ success: true, message: 'New User Is Added Successfully...', data: user });
         } catch (error) {
             console.log(error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
     }
+    
     //Login user with password
     static async loginUser(req, res) {
         try {
@@ -143,10 +149,8 @@ class UserController {
     //reset user password
     static async forgotPassword(req, res){
         const { email } = req.body;
-        
         try {
             const user = await userService.getUser({ email });
-            
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
@@ -154,23 +158,21 @@ class UserController {
             user.resetPasswordToken = resetToken;
             user.resetPasswordExpires = Date.now() + 3600000;
             await user.save();
-    
             await sendResetEmail(email, resetToken, user);
-    
             res.status(200).json({ success: true, message: 'Password reset email sent', resetToken });
         } catch (error) {
             console.error('Error sending password reset email:', error);
             res.status(500).json({ success: false, message: 'Internal Server Error' });
         }
     };
-      //reset user password
+
+    //reset user password
     static  async resetPassword(req, res) {
         const { token, newPassword } = req.body;
         try {
             console.log('Token received:', token); 
             const decoded = jwt.verify(token, config.jwtSecret);
             console.log('Decoded token:', decoded); 
-
             const user = await userService.getUserById(decoded.userId);
             if (!user) {
                 return res.status(404).json({ message: 'User not found.' });
@@ -182,7 +184,6 @@ class UserController {
             user.resetPasswordToken = undefined;
             user.resetPasswordExpires = undefined;
             await user.save();
-    
             res.status(200).json({success: true, message: 'Password reset successfully.' });
         } catch (error) {
             console.error('Error resetting password:', error);

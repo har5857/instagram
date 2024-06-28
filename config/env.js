@@ -7,11 +7,13 @@ const env = {
     },
     jwtSecret: process.env.JWT_SECRET,
     port: process.env.PORT,
+  
     email: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
       service: process.env.EMAIL_SERVICE,
     },
+    adminEmail: process.env.ADMIN_EMAIL
   };
 
 export default env;
