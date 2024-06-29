@@ -1,4 +1,4 @@
-import User from '../model/user.model.js'; 
+import User from './user.model.js'; 
 
 class UserService {
     //add user
@@ -14,13 +14,13 @@ class UserService {
     //get user by ID
     async getUserById(id) {
             return await User.findById(id);
-        }
+    }
 
     //get all users
     async getAllUsers(filter, skip, limit) {
             const users = await User.find(filter).skip(skip).limit(limit);
             return { users, totalUsers: await User.countDocuments(filter) };
-        }
+    }
     
     //count users
     async countUsers(filter) {

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import config from '../config/env.js';
-import User from '../features/auth/model/user.model.js';
+import User from '../features/auth/user.model.js';
 
 //user varification token
 export const userVerifyToken = async (req, res, next) => {

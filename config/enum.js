@@ -5,19 +5,23 @@ export const gender = {
 };
 
 export const userRoles = {
-    USER: 'USER',
-    ADMIN: 'ADMIN',
-    MODERATOR: 'MODERATOR',
-    CREATOR: 'CREATOR',
-    GUEST: 'GUEST',
-    ANALYST: 'ANALYST',
-    ADVERTISER: 'ADVERTISER'
+    USER: 'User',
+    ADMIN: 'Admin',
+    MODERATOR: 'Moderator',
+    CREATOR: 'Creator',
+    GUEST: 'Guest',
+    ANALYST: 'Analyst',
+    ADVERTISER: 'Advertiser'
 };
 
 export const friendRequestStatus = {
-    PENDING: 'PENDING',
-    ACCEPTED: 'ACCEPTED',
-    REJECTED: 'REJECTED'
+    PENDING: 'Pending',
+    ACCEPTED: 'Accepted',
+    REJECTED: 'Rejected'
 };
 
+export const accountType = {
+    PUBLIC: 'Public',
+    PRIVATE: 'Private'
+};
 

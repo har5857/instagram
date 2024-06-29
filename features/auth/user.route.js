@@ -1,19 +1,20 @@
 import express from 'express';
-import UserController from '../controller/user.controller.js';
+import UserController from './user.controller.js';
 import {
     validateUpdate,
     validateRegistration,
     validateLogin,
     validatechangePassword,
-} from '../validation/user.validation.js';
-import { userVerifyToken } from '../../../middleware/verifyToken.js';
-import { roleMiddleware } from '../../../middleware/roleMiddleware.js';
-import { userRoles } from '../../../config/enum.js';
+} from './user.validation.js';
+import { userVerifyToken } from '../../middleware/verifyToken.js';
+import upload from '../../middleware/upload.js';
+import { roleMiddleware } from '../../middleware/roleMiddleware.js';
+import { userRoles } from '../../config/enum.js';
 
 const router = express.Router();
 
 //register
-router.post('/register-user', validateRegistration, UserController.registerUser);
+router.post('/register-user', upload ,validateRegistration, UserController.registerUser);
 
 //login
 router.post('/login-user', validateLogin, UserController.loginUser);
@@ -23,6 +24,8 @@ router.get('/get-all-user', userVerifyToken , roleMiddleware([userRoles.ADMIN]),
 
 //get user
 router.get('/get-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]), UserController.getUser);
+
+// router.get('/get-all-followers', userVerifyToken, UserController.getAllFollowers);
 
 //update user
 router.put('/update-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]),validateUpdate, UserController.updateUser);

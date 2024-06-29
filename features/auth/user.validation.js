@@ -1,6 +1,5 @@
-// validation.js
 import Joi from 'joi';
-import { gender } from '../../../config/enum.js';
+import { accountType, gender } from '../../config/enum.js';
 
 //register user
 export const register = Joi.object({
@@ -12,6 +11,7 @@ export const register = Joi.object({
     bio: Joi.string().optional(),
     DOB: Joi.date().optional(),
     gender: Joi.string().valid(...Object.values(gender)).optional(),  
+    accountType: Joi.string().valid(...Object.values(accountType)).optional(),
 });
 
 //update user
@@ -27,7 +27,7 @@ export const update = Joi.object({
     followers: Joi.number().optional(),
     following: Joi.number().optional(),
     posts: Joi.number().optional(),
-    accountPrivate: Joi.boolean().optional(),
+    accountType: Joi.string().valid(...Object.values(accountType)).optional(),
     isAdmin: Joi.boolean().optional(),
     isDelete: Joi.boolean().optional(),
 });

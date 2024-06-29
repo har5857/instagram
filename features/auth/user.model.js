@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { gender , userRoles } from '../../../config/enum.js';
+import { accountType, gender , userRoles } from '../../config/enum.js';
 
 const userSchema = new mongoose.Schema({
   userName: {
@@ -39,32 +39,32 @@ const userSchema = new mongoose.Schema({
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-}],
+} ],
   following: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-}],
+} ],
   posts: [{
    type: String,  
-}],
-  accountPrivate: {
-    type: Boolean,
-    default: false,
-    select: false,
-},
+} ],
+  accountType: {
+    type : String,
+    enum: Object.values(accountType),
+    default : accountType.PUBLIC
+  },
   role: {
     type: String,
     enum: Object.values(userRoles),
     default: userRoles.USER,
-},
+  },
   isDelete: {
     type: Boolean,
     default: false,
-},
+  },
   isAdmin: {
     type: Boolean,
     default: false,
- },
+  },
 }, {
   versionKey: false,
   timestamps: true,

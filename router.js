@@ -1,6 +1,7 @@
 import express from 'express';
 const router = express.Router();
-import userRoutes from './features/auth/route/user.route.js';
+
+import userRoutes from './features/auth/user.route.js';
 import friendRequestRoutes from './features/request/request.route.js';
 
 // User routes

@@ -1,36 +1,46 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import UserService from '../service/user.service.js';
-import config from '../../../config/env.js';
-import { sendResetEmail } from '../../../helper/email.js';
-import { userRoles } from '../../../config/enum.js';
+import UserService from './user.service.js';
+import config from '../../config/env.js';
+import { sendResetEmail } from '../../helper/email.js';
+import { userRoles } from '../../config/enum.js';
+import {  
+    accountType
+} from '../../config/enum.js';
 
 const userService = new UserService();
 
 class UserController {
 
-    static async registerUser(req, res) {
-        try {
-            let user = await userService.getUser({ email: req.body.email });
-            if (user) {
-                return res.status(400).json({ message: 'User is Already Registered...' });
-            }
-            let hashPassword = await bcrypt.hash(req.body.password, 10);
-            let role = 'USER'; 
-            if (req.body.email === config.adminEmail){
-                role = 'ADMIN';
-            }
-            user = await userService.addNewUser({
-                ...req.body,
-                password: hashPassword,
-                role: role, 
-            });
-            res.status(201).json({ success: true, message: 'New User Is Added Successfully...', data: user });
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
+   
+static async registerUser(req, res) {
+    try {
+        let user = await userService.getUser({ email: req.body.email });
+        if (user) {
+            return res.status(400).json({ message: 'User is Already Registered...' });
         }
+        let hashPassword = await bcrypt.hash(req.body.password, 10);
+        let role = 'User'; 
+        if (req.body.email === config.adminEmail){
+            role = 'Admin';
+        }
+        let profilePicturePath = '';
+        if (req.file) {
+            profilePicturePath = `/uploads/profile_pictures/${req.file.filename}`;
+        }
+        user = await userService.addNewUser({
+            ...req.body,
+            password: hashPassword,
+            role: role,
+            profilePicture: profilePicturePath,
+        });
+        
+        res.status(201).json({ success: true, message: 'New User Is Added Successfully...', data: user });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
     }
+}
     
     //Login user with password
     static async loginUser(req, res) {
@@ -80,18 +90,48 @@ class UserController {
     //get user information
     static async getUser(req, res) {
         try {
-            const {userId} = req.params;
+            const { userId } = req.params;
+            const requestingUserId = req.user.id;
             let user = await userService.getUserById(userId);
             if (!user) {
                 return res.status(404).json({ message: 'User not found...' });
             }
-            res.status(200).json({success: true,message : 'User get Successfully' , data:user});
+            if (user.followers != requestingUserId && user.accountType === accountType.PRIVATE && userId !== requestingUserId){
+                const limitedUserInfo = {
+                    userName: user.userName,
+                    profilePicture: user.profilePicture,
+                    bio: user.bio,
+                    followersCount: user.followers.length,
+                    followingCount: user.following.length,
+                    postsCount: user.posts.length
+                };
+                return res.status(200).json({ success: true, message: 'User retrieved successfully', data: limitedUserInfo });
+            } else {
+                return res.status(200).json({ success: true, message: 'User retrieved successfully....', data: user });
+            }
         } catch (error) {
             console.log(error);
-            res.status(500).json({success: false, message: `Internal Server Error...${error.message}` });
+            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
     }
 
+    // static async getAllFollowers(req, res){
+    //     try {
+    //         const userId = req.user._id;
+    //         let user = await userService.getUserById(userId);
+    //         if(!user){
+    //             return res.status(404).json({message : 'User not found ..'});
+    //         }else{
+    //             return res.status(200).json({ success: true, message: 'followers retrived succesfully', data: user.followers})
+    //         }
+
+    //     } catch (error) {
+    //         console.log(error);
+    //         res.status(500).json({ success: false , message:`Internal Server Error...${error.message}`});
+
+    //     }
+    // }
+   
     //update user information
     static async updateUser(req, res) {
         try {
