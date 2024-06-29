@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import UserService from '../service/user.service.js';
 import config from '../../../config/env.js';
 import { sendResetEmail } from '../../../helper/email.js';
+import { userRoles } from '../../../config/enum.js';
 
 const userService = new UserService();
 
@@ -193,6 +194,25 @@ class UserController {
             res.status(500).json({ success: false ,message: 'Internal Server Error.' });
         }
     };
+
+    //Assign-user-role
+     static async assignUserRole(req, res) {
+       try {
+        const { userId } = req.params;
+        const { role } = req.body;
+        if (!Object.values(userRoles).includes(role)) {
+            return res.status(400).json({ success: false, message: 'Invalid role specified' });
+        }
+        const updatedUser = await userService.updateUserRole(userId, role);
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.status(200).json({ success: true, message: 'User role updated successfully', data: updatedUser });
+    } catch (error) {
+        console.error('Error assigning user role:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+}
 
 }
 

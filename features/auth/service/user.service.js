@@ -31,6 +31,12 @@ class UserService {
     async updateUser(id, body) {
             return await User.findByIdAndUpdate(id, { $set: body }, { new: true });
     }
+
+    //update user role
+     async updateUserRole(userId, role) {
+        return await User.findByIdAndUpdate(userId, { role: role }, { new: true });
+    }
+
 }
 
 export default UserService;

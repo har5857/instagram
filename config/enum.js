@@ -14,3 +14,10 @@ export const userRoles = {
     ADVERTISER: 'ADVERTISER'
 };
 
+export const friendRequestStatus = {
+    PENDING: 'PENDING',
+    ACCEPTED: 'ACCEPTED',
+    REJECTED: 'REJECTED'
+};
+
+

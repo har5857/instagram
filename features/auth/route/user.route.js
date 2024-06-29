@@ -39,4 +39,7 @@ router.post('/forgot-password', UserController.forgotPassword);
 //resetpassword
 router.post('/reset-password', UserController.resetPassword);
 
+//Assign-user-role
+router.put('/assign-role/:userId', userVerifyToken, roleMiddleware([userRoles.ADMIN]), UserController.assignUserRole);
+
 export default router;

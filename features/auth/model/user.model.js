@@ -40,31 +40,31 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
 }],
-following: [{
+  following: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
 }],
-posts: [{
+  posts: [{
    type: String,  
 }],
   accountPrivate: {
     type: Boolean,
     default: false,
     select: false,
-  },
+},
   role: {
     type: String,
     enum: Object.values(userRoles),
     default: userRoles.USER,
-  },
+},
   isDelete: {
     type: Boolean,
     default: false,
-  },
+},
   isAdmin: {
     type: Boolean,
     default: false,
-  },
+ },
 }, {
   versionKey: false,
   timestamps: true,

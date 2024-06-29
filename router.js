@@ -1,8 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const userRoutes = require('./features/auth/route/user.route');
+import userRoutes from './features/auth/route/user.route.js';
+import friendRequestRoutes from './features/request/request.route.js';
 
-//user routes
+// User routes
 router.use('/user', userRoutes);
 
-module.exports = router;
+// Friend request routes
+router.use('/request', friendRequestRoutes);
+
+export default router;
