@@ -29,7 +29,8 @@ const upload = multer({
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
-}).single('profilePicture'); 
+}).single('profilePicture','postImage'); 
+
 
 function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png/;

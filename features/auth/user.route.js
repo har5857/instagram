@@ -25,8 +25,6 @@ router.get('/get-all-user', userVerifyToken , roleMiddleware([userRoles.ADMIN]),
 //get user
 router.get('/get-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]), UserController.getUser);
 
-// router.get('/get-all-followers', userVerifyToken, UserController.getAllFollowers);
-
 //update user
 router.put('/update-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]),validateUpdate, UserController.updateUser);
 
@@ -44,5 +42,8 @@ router.post('/reset-password', UserController.resetPassword);
 
 //Assign-user-role
 router.put('/assign-role/:userId', userVerifyToken, roleMiddleware([userRoles.ADMIN]), UserController.assignUserRole);
+
+//search user
+router.get('/search-user', UserController.searchUsers);
 
 export default router;

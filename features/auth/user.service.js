@@ -37,6 +37,12 @@ class UserService {
         return await User.findByIdAndUpdate(userId, { role: role }, { new: true });
     }
 
+    // search user 
+    async searchUser(filter, skip, limit) {
+        const users = await User.find(filter).skip(skip).limit(limit);
+        return { users, totalUsers: await User.countDocuments(filter) };
+    }
+
 }
 
 export default UserService;

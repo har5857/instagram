@@ -1,11 +1,6 @@
 import Joi from 'joi';
 import  { friendRequestStatus } from '../../config/enum.js';
 
-//send Request
-// export const sendFriendRequest = Joi.object({
-//     userId: Joi.string().required(),
-// });
-
 //update Request
 export const updateFriendRequestStatus = Joi.object({
     status: Joi.string().valid(...Object.values(friendRequestStatus)).required(),
@@ -27,5 +22,5 @@ const validate = (schema) => (req, res, next) => {
     next();
 };
 
-// export const validatesendFriendRequest = validate(sendFriendRequest);
+
 export const validateupdateFriendRequestStatus = validate(updateFriendRequestStatus);

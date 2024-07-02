@@ -11,9 +11,8 @@ import {
 const userService = new UserService();
 
 class UserController {
-
-   
-static async registerUser(req, res) {
+    //Register user
+    static async registerUser(req, res) {
     try {
         let user = await userService.getUser({ email: req.body.email });
         if (user) {
@@ -34,13 +33,12 @@ static async registerUser(req, res) {
             role: role,
             profilePicture: profilePicturePath,
         });
-        
         res.status(201).json({ success: true, message: 'New User Is Added Successfully...', data: user });
     } catch (error) {
         console.log(error);
         res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
     }
-}
+    }
     
     //Login user with password
     static async loginUser(req, res) {
@@ -115,23 +113,6 @@ static async registerUser(req, res) {
         }
     }
 
-    // static async getAllFollowers(req, res){
-    //     try {
-    //         const userId = req.user._id;
-    //         let user = await userService.getUserById(userId);
-    //         if(!user){
-    //             return res.status(404).json({message : 'User not found ..'});
-    //         }else{
-    //             return res.status(200).json({ success: true, message: 'followers retrived succesfully', data: user.followers})
-    //         }
-
-    //     } catch (error) {
-    //         console.log(error);
-    //         res.status(500).json({ success: false , message:`Internal Server Error...${error.message}`});
-
-    //     }
-    // }
-   
     //update user information
     static async updateUser(req, res) {
         try {
@@ -152,11 +133,11 @@ static async registerUser(req, res) {
     static async deleteUser(req, res) {
         try {
             const {userId} = req.params;
-            let user = await userService.getUserById(userId);
+            let user = await userService.find(userId);
             if (!user) {
                 return res.status(404).json({ message: 'User not found...' });
             }
-            user = await userService.updateUser(userId, { isDelete: true });
+            user = await UserService.updateUser(userId, { isDelete: true });
             res.status(200).json({ success: true  , message: 'User Deleted Successfully...' , data:user});
         } catch (error) {
             console.log(error);
@@ -252,8 +233,29 @@ static async registerUser(req, res) {
         console.error('Error assigning user role:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
-}
+    }
+
+    //Search user
+    static async searchUsers(req, res){
+    try {
+        const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ message: 'Query parameter is required'});
+    }
+    const users = await userService.getUser({
+      $or: [
+        { userName: new RegExp(query, 'i') },
+        { email: new RegExp(query, 'i') },
+        { bio: new RegExp(query, 'i') },
+        { accountType: new RegExp(query, 'i')}
+      ]
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+    }
+    
 
 }
-
 export default UserController;

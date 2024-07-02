@@ -3,12 +3,14 @@ import { friendRequestStatus ,
          accountType
 } from '../../config/enum.js'; 
 import UserService from '../auth/user.service.js';
-// import User from '../auth/user.model.js';
-
-
 const userService = new UserService();
+import NotificationService from '../notification/notification.service.js';
+
+const notificationService = new NotificationService();
 
 class FriendRequestService {
+
+   
     // send Friend Request
     async sendFriendRequest(senderId, receiverId) {
         const sender = await userService.getUserById(senderId);
@@ -52,22 +54,6 @@ class FriendRequestService {
         }
     }
 
-    // async getAllFollowers(userId){
-    //     try {
-    //         const followers = await userService.getUserById(userId);
-    //         if(!userId){
-    //             return { success: false , message: 'user not found'};
-    //         }
-    //         else {
-    //             return { success : true , message: 'Followers retrived succesfully' , data: user.followers , followers }
-    //         }
-    //     } catch (error) {
-    //        console.error('Error fetching get All Followers:',error.message);
-    //        throw error; 
-    //     }
-    // }
-    
-
     // get all Request
     async getPendingRequests(userId) {
         try {
@@ -81,7 +67,7 @@ class FriendRequestService {
     }
 
     // update request status
-    async updateFriendRequestStatus(friendRequestId, newStatus) {
+    async updateFriendRequestStatus(friendRequestId, newStatus ) {
         try {
             const friendRequest = await FriendRequest.findById(friendRequestId);
             if (!friendRequest) {
@@ -100,12 +86,16 @@ class FriendRequestService {
                 }
                 if (!sender.following.includes(receiverId)) {
                     sender.following.push(receiverId);
-                }
+                } 
                 await sender.save();
                 await receiver.save();
                 await friendRequest.save();
+                let notificationResponse;
+                if (newStatus === 'Accepted') {
+                notificationResponse = await notificationService.acceptFriendRequestNotification(senderId,receiverId);
+                }
                 await FriendRequest.findByIdAndDelete(friendRequestId);
-                return { success: true, message: 'Friend request accepted and successfully' };
+                return { success: true, message: 'Friend request accepted and successfully',notificationResponse };
             } else if (newStatus === friendRequestStatus.REJECTED) {
                 await FriendRequest.findByIdAndDelete(friendRequestId);
                 return { success: true, message: 'Friend request rejected successfully' };
@@ -117,6 +107,37 @@ class FriendRequestService {
             throw error;
         }
     }
+
+    async removeFollowers(senderId, receiverId) {
+        const sender = await userService.getUserById(senderId);
+        const receiver = await userService.getUserById(receiverId);
+        if(!sender || !receiver){
+            return { success: false,message: 'User not Found'};
+        }
+        if(!sender.followers.includes(receiverId)){
+            return { success : false , message: ' follower Not Found'};
+        }else{
+          sender.followers.splice(sender.followers.indexOf(receiverId),1);
+          await sender.save();
+          return { seccess:true , message: ' follower Remove Sucessfully'};
+        }
+    }
+
+    async removeFollowings(senderId , receiverId){
+        const sender = await userService.getUserById(senderId);
+        const receiver = await userService.getUserById(receiverId);
+        if(!sender ||!receiver){
+            return { success: false,message: 'User not Found'};
+        }
+        if(!sender.following.includes(receiverId)){
+            return { success : false , message: ' follower Not Found'};
+        }else{
+          sender.following.splice(sender.following.indexOf(receiverId),1);
+          await sender.save();
+          return { seccess:true , message: ' follower Remove Sucessfully'};
+        }
+    }
+    
 }
 
 export default FriendRequestService;

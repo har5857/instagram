@@ -3,6 +3,8 @@ const friendRequestService = new FriendRequestService();
 import { friendRequestStatus } from '../../config/enum.js'; 
 import UserService from '../auth/user.service.js';
 const userService = new UserService();
+import NotificationService from '../notification/notification.service.js';
+const notificationService = new NotificationService();
 
 class FriendRequestController {
     //send friend Request
@@ -17,7 +19,9 @@ class FriendRequestController {
             if (!result.success) {
                 return res.status(400).json({ success: false, message: result.message });
             }
-            res.status(200).json({ success: true, message: result.message, data: result.data });
+            const Notification = await notificationService.sendFriendRequestNotification(senderId, userId);
+
+            res.status(200).json({ success: true, message: result.message, data: result.data ,Notification});
         } catch (error) {
             console.error('Error sending friend request:', error.message);
             res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -42,7 +46,7 @@ class FriendRequestController {
     // update Request Status
     static async UpdateFriendRequestStatus (req, res) {
         const { status } = req.body;
-        const { friendRequestId } = req.params;
+        const { friendRequestId ,} = req.params;
         try {
             if (![friendRequestStatus.ACCEPTED, friendRequestStatus.REJECTED].includes(status)) {
                 return res.status(400).json({ success:false, message: 'Invalid status' });
@@ -54,7 +58,7 @@ class FriendRequestController {
         }
     }
 
-    //get all folowers
+    //get all followers
     static async getAllFollowers(req, res){
         try {
             const userId = req.user._id;
@@ -71,7 +75,7 @@ class FriendRequestController {
         }
     }
 
-    //get all folowings
+    //get all followings
     static async getAllfollowings(req, res){
         try {
             const userId = req.user._id;
@@ -86,6 +90,40 @@ class FriendRequestController {
             res.status(500).json({success: false , message:`Internal Server Error...${error.message}`});
         }
     }
+
+    //remove followers
+    static async removeFollowers(req, res){
+        const{ userId } = req.params;
+        const senderId = req.user._id;
+        try {
+            const result = await friendRequestService.removeFollowers(senderId, userId);
+            if (!result.success){
+                return res.status(400).json({ success: false , message : result.message});
+            }
+            res.status(200).json({ success: true , message: result.message, data : result.data});
+        } catch (error) {
+          console.error('Error Remove Followers:', error.message);
+          res.status(500).json({ success: false , message: 'Internal server Error'});  
+        }
+    }
+
+    //remove followings
+    static async removeFollowings(req, res){
+        const{ userId } = req.params;
+        const senderId = req.user._id;
+        try {
+            const result = await friendRequestService.removeFollowings(senderId, userId);
+            if (!result.success){
+                return res.status(400).json({ success: false , message : result.message});
+            }
+            res.status(200).json({ success: true , message: result.message, data : result.data});
+        } catch (error) {
+          console.error('Error Remove Followings:', error.message);
+          res.status(500).json({ success: false , message: 'Internal server Error'});  
+        }
+    
+}
+
 }
 
 export default FriendRequestController;
