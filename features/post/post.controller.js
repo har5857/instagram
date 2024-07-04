@@ -71,7 +71,37 @@ class PostController {
         }
     }
 
-}
+    //add like
+    static async addLike(req, res){
+        const { postId } = req.params;
+        const userId = req.user._id;
+        try {
+            const result = await PostService.addLike(postId,userId);
+            if(!result.success){
+                return res.status(400).json({ success: false, message: result.message });
+            }
+            res.status(200).json({success: true, message: result.message, data: result.data});
+        } catch (error) {
+            console.error('Error  Add Like', error);
+            res.status(500).json({ success: false, message: 'Internal Server Error' }); 
+        }
+    }
 
+    //remove like
+    static async removeLike(req,res){
+        const { postId } = req.params;
+        const userId = req.user.Id;
+        try {
+            const result = await PostService.removeLike(postId, userId);
+            if(!result.success){
+                return res.status(400).json({success: false , message: result.message});
+            }
+            res.status(200).json({success: true, message: result.message, data: result.data});
+        } catch (error) {
+            console.error('Error Remove Like', error);
+            res.status(500).json({ success: false, message: 'Internal Server Error' }); 
+        }
+    }
+}
 
 export default PostController;

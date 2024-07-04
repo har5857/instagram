@@ -16,5 +16,11 @@ router.get('/get-all-post', userVerifyToken, PostController.getAllPosts);
 //delete post
 router.delete('/delete-post/:postId', userVerifyToken, PostController.deletePost);
 
+//add-like
+router.post('/add-like/:postId', userVerifyToken, PostController.addLike);
+
+//remove-like
+router.delete('/remove-like/:postId',userVerifyToken,PostController.removeLike);
+
 export default router;
 

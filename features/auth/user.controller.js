@@ -52,7 +52,7 @@ class UserController {
                 return res.status(400).json({ message: 'Password is not match...' });
             }
             let token = jwt.sign({ userId: user._id }, config.jwtSecret);
-            res.status(200).json({ success: true, message: 'Login Successfully',token});
+            res.status(200).json({ success: true, message: 'Login Successfully',token , data: user});
         } catch (error) {
             console.log(error);
             res.status(500).json({success: false ,message: `Internal Server Error...${error.message}` });

@@ -1,4 +1,4 @@
-import  {userRoles}  from '../config/enum.js';
+import  { userRoles }  from '../config/enum.js';
 
 export const roleMiddleware = (allowedRoles) => {
     return (req, res, next) => {

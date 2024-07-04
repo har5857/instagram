@@ -1,7 +1,7 @@
 import Notification from './notification.model.js';
 import UserService from '../auth/user.service.js';
 const userService = new UserService();
-import io from '../../index.js';
+// import io from '../../index.js';
 
 class NotificationService {
     async sendNotification(senderId, receiverId, message ){

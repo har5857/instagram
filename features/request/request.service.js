@@ -108,6 +108,7 @@ class FriendRequestService {
         }
     }
 
+    // remove follower
     async removeFollowers(senderId, receiverId) {
         const sender = await userService.getUserById(senderId);
         const receiver = await userService.getUserById(receiverId);
@@ -123,6 +124,7 @@ class FriendRequestService {
         }
     }
 
+    //remove follower
     async removeFollowings(senderId , receiverId){
         const sender = await userService.getUserById(senderId);
         const receiver = await userService.getUserById(receiverId);

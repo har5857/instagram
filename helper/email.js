@@ -23,9 +23,6 @@ export const sendResetEmail = async (email, resetToken, user) => {
         const templatePath = path.resolve(__dirname, '../views/resetpassword.html');
         const emailTemplate = await ejs.renderFile(templatePath, { user, resetUrl });
         
-         cron.schedule('* * * * *', () => {
-            console.log('Sending an email with crown job');
-
         const mailOptions = {
             from: env.email.user,
             to: email,
@@ -38,7 +35,7 @@ export const sendResetEmail = async (email, resetToken, user) => {
             }
             console.log('Email sent: ' + info.response);
           });
-        });
+        
     } catch (error) {
         console.error('Error sending password reset email:', error);
         throw new Error('Error sending password reset email');
