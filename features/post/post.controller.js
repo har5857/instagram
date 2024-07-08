@@ -1,25 +1,21 @@
 import PostService from './post.service.js';
 const postService = new PostService();
-import upload from '../../middleware/uploadpost.js'
+
 
 class PostController {
 
     //uploads posts
     static async uploadPost(req, res) {
         try {
-            upload.single('postImage')(req, res, async (err) => {
-                if (err) {
-                    return res.status(400).json({ success: false, message: err.message });
-                }
                 const { caption } = req.body;
                 const postImagePath = req.file ? `/uploads/post/${req.file.filename}` : '';
+                
                 const post = await PostService.addNewPost({
                     user :  req.user._id,
                     caption,
                     postImage: postImagePath,
                 });
                 res.status(201).json({ success: true, message: 'Post uploaded successfully', data: post });
-            });
         } catch (error) {
             console.log(error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });

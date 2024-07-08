@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { accountType, gender , userRoles } from '../../config/enum.js';
+import { request } from 'http';
 
 const userSchema = new mongoose.Schema({
   userName: {
@@ -15,10 +16,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  profilePicture: {
+  profilePicture:[ {
     type: String,
     default: null,
-  },
+}],
   bio: {
     type: String,
     default: null,

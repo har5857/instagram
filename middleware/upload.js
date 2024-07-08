@@ -1,47 +1,48 @@
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import multer from 'multer';
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
 import fs from 'fs';
-import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const uploadsDir = join(__dirname, '../uploads/profile_pictures');
 
-if (!fs.existsSync(uploadsDir)) {
-    try {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-    } catch (err) {
-        console.error('Error creating uploads directory:', err);
-    }
+
+const uploadDir = path.join(__dirname, '..', 'uploads', 'profile_picture');
+// console.log('Upload directory:', uploadDir); 
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+    // console.log('Upload directory created:', uploadDir); 
 }
+
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir);
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
     },
-    filename: function (req, file, cb) {
-        cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+    filename: (req, file, cb) => {
+        const extname = path.extname(file.originalname);
+        const filename = `${uuidv4()}${extname}`;
+        console.log('Generated filename:', filename);
+        cb(null, filename);
     }
 });
+
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 1000000 }, 
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
+    limits: { fileSize: 10 * 1024 * 1024 }, 
+    fileFilter: function(Message, file, cb) {
+        const fileTypes = /jpeg|jpg|png|gif/;
+        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = fileTypes.test(file.mimetype);
+        if (extname && mimetype) {
+            cb(null, true);
+        } else {
+            // cb(new Error('Only images allowed'));
+            cb('Only images allowed');
+        }
     }
-}).single('profilePicture','postImage'); 
+}).array('profilePicture', 3); 
 
 
-function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb('Error: Images Only!');
-    }
-}
 
 export default upload;

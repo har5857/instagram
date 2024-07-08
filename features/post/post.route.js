@@ -1,11 +1,12 @@
 import express from 'express';
 import PostController from './post.controller.js';
 import { userVerifyToken } from '../../middleware/verifyToken.js';
+import upload from '../../middleware/uploadpost.js';
 
 const router = express.Router();
 
 //upload post
-router.post('/upload-post', userVerifyToken, PostController.uploadPost);
+router.post('/upload-post',  upload.single('postImage') , userVerifyToken, PostController.uploadPost);
 
 //get post
 router.get('/get-post/:postId', userVerifyToken, PostController.getPost);

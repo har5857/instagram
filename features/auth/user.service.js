@@ -28,10 +28,16 @@ class UserService {
     }
 
     //update user
-    async updateUser(id, body) {
-            return await User.findByIdAndUpdate(id, { $set: body }, { new: true });
-    }
-
+     async updateUser(id, body) {
+        try {
+          console.log('Updating user with data:', body);
+          return await User.findByIdAndUpdate(id, { $set: body }, { new: true });
+        } catch (error) {
+          console.error('Error updating user:', error.message);
+          throw error;
+        }
+}
+    
     //update user role
      async updateUserRole(userId, role) {
         return await User.findByIdAndUpdate(userId, { role: role }, { new: true });

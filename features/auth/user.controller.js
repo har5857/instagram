@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import UserService from './user.service.js';
 import config from '../../config/env.js';
-import { sendResetEmail } from '../../helper/email.js';
+import { sendResetEmail , sendOtp } from '../../helper/email.js';
 import { userRoles } from '../../config/enum.js';
 import {  
     accountType
@@ -13,51 +13,66 @@ const userService = new UserService();
 class UserController {
     //Register user
     static async registerUser(req, res) {
-    try {
-        let user = await userService.getUser({ email: req.body.email });
-        if (user) {
-            return res.status(400).json({ message: 'User is Already Registered...' });
+        try {
+            let user = await userService.getUser({ email: req.body.email });
+            if (user) {
+                return res.status(400).json({ message: 'User is Already Registered...' });
+            }
+            let hashPassword = await bcrypt.hash(req.body.password, 10);
+            let role = 'User'; 
+            if (req.body.email === config.adminEmail) {
+                role = 'Admin';
+            }
+            let profilePictureOriginalPaths = [];
+            let profilePictureAccessiblePaths = [];
+            if (req.files && req.files.length > 0) {
+                const baseURL = `${req.protocol}://${req.get('host')}`;
+                profilePictureOriginalPaths = req.files.map(file => file.path.replace(/\\/g, '/'));
+                profilePictureAccessiblePaths =  req.files.map(file => `${baseURL}/uploads/profile_picture/${file.filename}`);
+            }
+            user = await userService.addNewUser({
+                ...req.body,
+                password: hashPassword,
+                role: role,
+                profilePicture: profilePictureAccessiblePaths,
+            });
+            console.log('User registered successfully:', user);
+            console.log('Accessible paths:', profilePictureAccessiblePaths);
+            res.status(201).json({ 
+                success: true, 
+                message: 'New User Is Added Successfully...', 
+                data: {
+                    user
+                } 
+            });
+        } catch (error) {
+            console.error('Error registering user:', error);
+            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
-        let hashPassword = await bcrypt.hash(req.body.password, 10);
-        let role = 'User'; 
-        if (req.body.email === config.adminEmail){
-            role = 'Admin';
-        }
-        let profilePicturePath = '';
-        if (req.file) {
-            profilePicturePath = `/uploads/profile_pictures/${req.file.filename}`;
-        }
-        user = await userService.addNewUser({
-            ...req.body,
-            password: hashPassword,
-            role: role,
-            profilePicture: profilePicturePath,
-        });
-        res.status(201).json({ success: true, message: 'New User Is Added Successfully...', data: user });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
-    }
     }
     
     //Login user with password
     static async loginUser(req, res) {
         try {
-            let user = await userService.getUser({ email: req.body.email, isDelete: false });
+            const { email, password } = req.body;
+            let user = await userService.getUser({ email, isDelete: false });
             if (!user) {
                 return res.status(404).json({ message: 'Email Not Found' });
             }
-            let checkPassword = await bcrypt.compare(req.body.password, user.password);
+            const otp = await sendOtp(email, user);
+            // return res.status(200).json({ success: true, message: 'OTP Sent Successfully', otp });
+            const checkPassword = await bcrypt.compare(password, user.password);
             if (!checkPassword) {
-                return res.status(400).json({ message: 'Password is not match...' });
+                return res.status(400).json({ message: 'Password is not correct' });
             }
-            let token = jwt.sign({ userId: user._id }, config.jwtSecret);
-            res.status(200).json({ success: true, message: 'Login Successfully',token , data: user});
+            const token = jwt.sign({ userId: user._id }, config.jwtSecret);
+            res.status(200).json({ success: true, message: 'Login Successfully', token, otp, data: user});
         } catch (error) {
-            console.log(error);
-            res.status(500).json({success: false ,message: `Internal Server Error...${error.message}` });
+            console.error('Error in loginUser:', error);
+            res.status(500).json({ success: false, message: `Internal Server Error: ${error.message}` });
         }
     }
+
 
     //get all users
     static async getAllUser(req, res) {
@@ -116,19 +131,35 @@ class UserController {
     //update user information
     static async updateUser(req, res) {
         try {
-            const {userId} = req.params;
+            const { userId } = req.params;
             let user = await userService.getUserById(userId);
             if (!user) {
                 return res.status(404).json({ message: 'User Not Found...' });
             }
-            user = await userService.updateUser(userId, { ...req.body });
-            res.status(200).json({success: true , message: 'User Updated Successfully...', data:user });
+            const updatedData = { ...req.body };
+            const baseURL = `${req.protocol}://${req.get('host')}`;
+            if (req.files && req.files.length > 0) {
+                const originalPaths = req.files.map(file => file.path.replace(/\\/g, '/'));
+                const accessiblePaths = req.files.map(file => `${baseURL}/uploads/profile_picture/${file.filename}`);
+    
+                updatedData.profilePicture = accessiblePaths;
+
+                console.log('Accessible Paths:', originalPaths);
+            }
+            user = await userService.updateUser(userId, updatedData);
+            res.status(200).json({
+                success: true,
+                message: 'User Updated Successfully...',
+                data: {
+                    user
+                }
+            });
         } catch (error) {
             console.log(error);
-            res.status(500).json({ success: false ,message: `Internal Server Error...${error.message}` });
+            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
     }
-
+    
     //delete user
     static async deleteUser(req, res) {
         try {
@@ -233,7 +264,7 @@ class UserController {
         console.error('Error assigning user role:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
-    }
+    };
 
     //Search user
     static async searchUsers(req, res){
@@ -254,7 +285,7 @@ class UserController {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-    }
+    };
     
 
 }

@@ -26,7 +26,7 @@ router.get('/get-all-user', userVerifyToken , roleMiddleware([userRoles.ADMIN]),
 router.get('/get-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]), UserController.getUser);
 
 //update user
-router.put('/update-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]),validateUpdate, UserController.updateUser);
+router.put('/update-user/:userId', upload , userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]),validateUpdate, UserController.updateUser);
 
 //delete user
 router.delete('/delete-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN]), UserController.deleteUser);

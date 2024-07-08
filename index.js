@@ -2,13 +2,17 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import connectDB from './helper/dbConnection.js';
 import router from './router.js'; 
-import path from 'path';
+import path, { dirname } from 'path';
 import cors from'cors';
 import dotenv from 'dotenv';
 import UserService from './features/auth/user.service.js';
 const userService = new UserService();
 import MessageService from './features/message/message.service.js';
 const messageService = new MessageService();
+import { fileURLToPath } from 'url';
+import Message from './features/message/message.model.js';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const user = {}; 
 
@@ -28,9 +32,7 @@ const PORT = process.env.PORT || 5000;
 */
 import http from 'http';
 import { Server as SocketIOServer  } from 'socket.io';
-
-
-
+import MessageController from './features/message/message.controller.js';
 
 const server = http.createServer(app);
 const io = new SocketIOServer(server,{
@@ -39,7 +41,6 @@ const io = new SocketIOServer(server,{
     methods: [ "GET","POST" ],
   },
 });
-
 
 io.on('connection', (socket) => {
   console.log('A user connected');
@@ -53,9 +54,11 @@ io.on('connection', (socket) => {
           console.error('Error sending user list:', error);
       });
 
-      socket.on('checkMessages', async (userId) => {
-          // const { userId } = message;
+      socket.on('checkMessages', async (token) => {
         try {
+            const decoded = jwt.verify(token, 'user'); 
+            const userId = decoded.userId; 
+    
             const result = await MessageService.checkMessage(userId);
             if (result.success) {
                 socket.emit('messages', result.data);
@@ -81,23 +84,22 @@ io.on('connection', (socket) => {
      });
 
 
-    // socket.on('sendMessage', (message) => {
-    //     const { usrId, toNumber, fromNumber } = message;
-    //     const toSocketId = user[toNumber];
-        
-    //     if (toSocketId) {
-    //         io.to(toSocketId).emit('receiveMessage', {
-    //             usrId,
-    //             toNumber,
-    //             fromNumber,
-    //             message: message.content
-    //         });
-    //         console.log(`Message sent from ${fromNumber} to ${toNumber}`);
-    //     } else {
-    //         console.log(`User with number ${toNumber} is not connected.`);
-    //     }
-    // });
-
+     socket.on('sendMessage', async (data) => {
+      try {
+        const { toId, fromId, messageContent } = data;
+        const newMessage = new Message({
+          toUser: toId,
+          fromUser: fromId,
+          content: messageContent,
+        });
+        await newMessage.save();
+        console.log('Message saved to Database');
+        socket.broadcast.emit('newMessage', newMessage);
+      } catch (error) {
+        console.error('Error saving message:', error.message);
+      }
+    });
+    
   socket.on('disconnect', () => {
       console.log('A user disconnected');
   });
@@ -125,8 +127,11 @@ app.use('/api', router);
    Upload File
   _ _ _ _ _ _ _ _
 */
-const uploadsPath = path.join(new URL('.', import.meta.url).pathname, 'uploads');
-app.use('/uploads', express.static(uploadsPath));
+// const uploadsPath = path.join(new URL('.', import.meta.url).pathname, 'uploads');
+// app.use('/uploads', express.static(uploadsPath));
+
+const uploads = path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploads));
 
 // socket
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));

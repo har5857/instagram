@@ -21,6 +21,21 @@ class MessageService{
     throw error;
   }
  }
+
+
+ static async saveMessage(data) {
+  try {
+    const message = new Message(data);
+    await message.save();
+    return message;
+  } catch (error) {
+    console.error('Error saving message:', error.message);
+    throw new Error('Error saving message to the database');
+  }
+}
+
+
+
 }
 
 export default MessageService;

@@ -1,13 +1,26 @@
-
 import multer from 'multer';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
+import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const uploadDir = path.join(__dirname, '..', 'uploads', 'post');
+// console.log('Upload directory:', uploadDir); 
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+    // console.log('Upload directory created:', uploadDir); 
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/post'); 
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+        const extname = path.extname(file.originalname);
+        cb(null, `${uuidv4()}${extname}`);
     }
 });
 
@@ -19,7 +32,7 @@ const upload = multer({
         const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = fileTypes.test(file.mimetype);
         if (extname && mimetype) {
-            return cb(null, true);
+            cb(null, true);
         } else {
             cb(new Error('Only images are allowed'));
         }
