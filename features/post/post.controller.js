@@ -8,7 +8,8 @@ class PostController {
     static async uploadPost(req, res) {
         try {
                 const { caption } = req.body;
-                const postImagePath = req.file ? `/uploads/post/${req.file.filename}` : '';
+                const baseURL = `${req.protocol}://${req.get('host')}`;
+                const postImagePath = req.files.map(file => `${baseURL}/uploads/post/${file.filename}`);
                 
                 const post = await PostService.addNewPost({
                     user :  req.user._id,
@@ -16,6 +17,29 @@ class PostController {
                     postImage: postImagePath,
                 });
                 res.status(201).json({ success: true, message: 'Post uploaded successfully', data: post });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
+        }
+    }
+
+    //update-post
+    static async updatePost(req , res){
+        try {
+            const { postId } = req.params;
+            let post = await PostService.getPost(postId);
+            if(!post ){
+                return res.status(404).json({ message: `Post Not Found....`});
+            } 
+            const updateData = { ...req.body };
+            post = await PostService.updatePost(postId, updateData);
+            res.status(200).json({
+                success: true,
+                message: 'post Updated Successfully...',
+                data: {
+                    post
+                }
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });

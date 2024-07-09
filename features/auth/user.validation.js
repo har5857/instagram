@@ -38,6 +38,12 @@ export const login = Joi.object({
     password: Joi.string().min(6).required()
 });
 
+// verify-otp
+export const verifyOtp = Joi.object({
+    email: Joi.string().email().required(),
+    otp: Joi.string().required()
+});
+
 //change password user
 export const changePassword = Joi.object({
     currentPassword: Joi.string().required(),
@@ -67,4 +73,6 @@ export const validateRegistration = validate(register);
 export const validateUpdate = validate(update);
 export const validateLogin = validate(login);
 export const validatechangePassword = validate(changePassword);
+export const validateverifyOtp = validate(verifyOtp);
+
 

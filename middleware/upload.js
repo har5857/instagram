@@ -29,19 +29,19 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, 
-    fileFilter: function(Message, file, cb) {
-        const fileTypes = /jpeg|jpg|png|gif/;
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: function (req, file, cb) {
+        const fileTypes = /jpeg|jpg|png/;
         const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
         const mimetype = fileTypes.test(file.mimetype);
         if (extname && mimetype) {
             cb(null, true);
         } else {
-            // cb(new Error('Only images allowed'));
-            cb('Only images allowed');
+            req.fileValidationError = 'Only images allowed.....';
+            cb(null, false);
         }
     }
-}).array('profilePicture', 3); 
+}).array('profilePicture', 3);
 
 
 

@@ -2,14 +2,18 @@ import express from 'express';
 import PostController from './post.controller.js';
 import { userVerifyToken } from '../../middleware/verifyToken.js';
 import upload from '../../middleware/uploadpost.js';
+import { validateUpdate } from './post.validation.js'
 
 const router = express.Router();
 
 //upload post
-router.post('/upload-post',  upload.single('postImage') , userVerifyToken, PostController.uploadPost);
+router.post('/upload-post' , upload.array('postImage', 5), userVerifyToken, PostController.uploadPost);
 
 //get post
 router.get('/get-post/:postId', userVerifyToken, PostController.getPost);
+
+//Update Post
+router.put('/update-post/:postId', userVerifyToken, validateUpdate , PostController.updatePost);
 
 //get all post
 router.get('/get-all-post', userVerifyToken, PostController.getAllPosts);

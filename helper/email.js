@@ -6,6 +6,7 @@ import env from '../config/env.js';
 import cron from'node-cron';
 import otpGenerator from 'otp-generator';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -45,8 +46,7 @@ export const sendResetEmail = async (email, resetToken, user) => {
 
 export const sendOtp = async (email, user) => {
     try {
-
-        const otp = otpGenerator.generate(6, { digits: true, alphabets: false, upperCase: false });
+        const otp = otpGenerator.generate(4, { digits: true, alphabets: false, upperCase: false,lowerCase: false , specialChars:false});
         const resetUrl = `http://localhost:5555/Otp-varification`;
         const templatePath = path.resolve(__dirname, '../views/otp.html');
         const emailTemplate = await ejs.renderFile(templatePath, { user, resetUrl, otp });
@@ -57,8 +57,10 @@ export const sendOtp = async (email, user) => {
             subject: 'Otp Varification Request',
             html: emailTemplate,
         };
+
         const info = await transporter.sendMail(mailOptions);
         console.log('Email sent: ' + info.response);
+        console.log(`Generated OTP for ${email}: ${otp}`); 
 
         return otp; 
     } catch (error) {

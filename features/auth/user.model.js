@@ -16,10 +16,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  profilePicture:[ {
-    type: String,
-    default: null,
-}],
+  profilePicture: {
+    single: {
+        type: String,
+        default: null
+    },
+    multiple: [{
+        type: String,
+        default: null
+    }]
+  },
   bio: {
     type: String,
     default: null,
@@ -58,6 +64,14 @@ const userSchema = new mongoose.Schema({
     enum: Object.values(userRoles),
     default: userRoles.USER,
   },
+  otp:{
+    type: String,
+    default: null,
+  },
+  otpExpiry: {
+    type: Date,
+    default: null,
+},
   isDelete: {
     type: Boolean,
     default: false,

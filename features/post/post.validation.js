@@ -1,14 +1,8 @@
 import Joi from 'joi';
 
-
-export const AddComment = Joi.object({
-    Text: Joi.string().required(),
+export const update = Joi.object({
+    caption: Joi.string().optional(),
 });
-
-export const updateComment = Joi.object({
-    Text: Joi.string().required(),
-})
-
 
 const validate = (schema) => (req, res, next) => {
     const { error } = schema.validate(req.body, { abortEarly: false });
@@ -27,5 +21,4 @@ const validate = (schema) => (req, res, next) => {
     next();
 };
 
-export const validateComment = validate(AddComment);
-export const validateupdate = validate(updateComment);
+export const validateUpdate = validate(update);

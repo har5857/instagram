@@ -23,33 +23,32 @@ class UserController {
             if (req.body.email === config.adminEmail) {
                 role = 'Admin';
             }
-            let profilePictureOriginalPaths = [];
-            let profilePictureAccessiblePaths = [];
+            let profilePicture = { single: null, multiple: [] };
+            const baseURL = `${req.protocol}://${req.get('host')}`;
             if (req.files && req.files.length > 0) {
-                const baseURL = `${req.protocol}://${req.get('host')}`;
-                profilePictureOriginalPaths = req.files.map(file => file.path.replace(/\\/g, '/'));
-                profilePictureAccessiblePaths =  req.files.map(file => `${baseURL}/uploads/profile_picture/${file.filename}`);
+                if (req.files.length === 1) {
+                    profilePicture.single = `${baseURL}/uploads/profile_picture/${req.files[0].filename}`;
+                } else {
+                    profilePicture.multiple = req.files.map(file => `${baseURL}/uploads/profile_picture/${file.filename}`);
+                }
             }
             user = await userService.addNewUser({
                 ...req.body,
                 password: hashPassword,
                 role: role,
-                profilePicture: profilePictureAccessiblePaths,
+                profilePicture: profilePicture,
             });
             console.log('User registered successfully:', user);
-            console.log('Accessible paths:', profilePictureAccessiblePaths);
             res.status(201).json({ 
                 success: true, 
                 message: 'New User Is Added Successfully...', 
-                data: {
-                    user
-                } 
+                data: { user } 
             });
         } catch (error) {
             console.error('Error registering user:', error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
-    }
+    };
     
     //Login user with password
     static async loginUser(req, res) {
@@ -59,21 +58,67 @@ class UserController {
             if (!user) {
                 return res.status(404).json({ message: 'Email Not Found' });
             }
-            const otp = await sendOtp(email, user);
-            // return res.status(200).json({ success: true, message: 'OTP Sent Successfully', otp });
             const checkPassword = await bcrypt.compare(password, user.password);
             if (!checkPassword) {
                 return res.status(400).json({ message: 'Password is not correct' });
             }
-            const token = jwt.sign({ userId: user._id }, config.jwtSecret);
-            res.status(200).json({ success: true, message: 'Login Successfully', token, otp, data: user});
+            const otp = await sendOtp(email, user);
+    
+            user.otp = otp;
+            user.otpExpiry = new Date(Date.now() + 1 * 60 * 1000); 
+            await user.save();
+    
+            console.log(`Storing OTP for email: ${email} | OTP: ${otp}`); 
+            return res.status(200).json({ success: true, message: 'OTP Sent Successfully', otp });
         } catch (error) {
             console.error('Error in loginUser:', error);
             res.status(500).json({ success: false, message: `Internal Server Error: ${error.message}` });
         }
-    }
+    };
 
-
+    //Resend otp
+    static async resendOtp(req, res) {
+        try {
+            const { email } = req.body;
+            let user = await userService.getUser({ email, isDelete: false });
+            if (!user) {
+                return res.status(404).json({ message: 'Email Not Found' });
+            }
+            const otp = await sendOtp(email, user);
+            user.otp = otp;
+            user.otpExpiry = new Date(Date.now() + 1 * 60 * 1000); 
+            await user.save();
+    
+            console.log(`Resent OTP for email: ${email} | New OTP: ${otp}`); 
+            return res.status(200).json({ success: true, message: 'New OTP Sent Successfully', otp });
+        } catch (error) {
+            console.error('Error in resendOtp:', error);
+            res.status(500).json({ success: false, message: `Internal Server Error: ${error.message}` });
+        }
+    };
+    
+    //verify-otp
+    static async verifyOtp(req, res) {
+        try {
+            const { email, otp } = req.body;
+            let user = await userService.getUser({ email, isDelete: false });
+            if (!user) {
+                return res.status(404).json({ message: 'Email Not Found' });
+            }
+            if (user.otp !== otp || new Date() > user.otpExpiry) {
+                return res.status(400).json({ message: 'OTP is incorrect or expired' });
+            }
+            const token = jwt.sign({ userId: user._id, email: user.email, role: user.role }, config.jwtSecret);
+            user.otp = null;
+            user.otpExpiry = null;
+            await user.save();
+            return res.status(200).json({ success: true, token ,data: user});
+        } catch (error) {
+            console.error('Error in verifyOtp:', error);
+            res.status(500).json({ success: false, message: `Internal Server Error: ${error.message}` });
+        }
+    };
+    
     //get all users
     static async getAllUser(req, res) {
         try {
@@ -98,7 +143,7 @@ class UserController {
             console.log(error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
-    }
+    };
     
     //get user information
     static async getUser(req, res) {
@@ -126,7 +171,7 @@ class UserController {
             console.log(error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
-    }
+    };
 
     //update user information
     static async updateUser(req, res) {
@@ -136,16 +181,22 @@ class UserController {
             if (!user) {
                 return res.status(404).json({ message: 'User Not Found...' });
             }
+    
             const updatedData = { ...req.body };
             const baseURL = `${req.protocol}://${req.get('host')}`;
-            if (req.files && req.files.length > 0) {
-                const originalPaths = req.files.map(file => file.path.replace(/\\/g, '/'));
-                const accessiblePaths = req.files.map(file => `${baseURL}/uploads/profile_picture/${file.filename}`);
+            let profilePicture = { single: null, multiple: [] };
     
-                updatedData.profilePicture = accessiblePaths;
-
-                console.log('Accessible Paths:', originalPaths);
+            if (req.files && req.files.length > 0) {
+                if (req.files.length === 1) {
+                    profilePicture.single = `${baseURL}/uploads/profile_picture/${req.files[0].filename}`;
+                    updatedData.profilePicture = profilePicture;
+                } else {
+                    profilePicture.multiple = req.files.map(file => `${baseURL}/uploads/profile_picture/${file.filename}`);
+                    updatedData.profilePicture = profilePicture;
+                }
+                console.log('Accessible Paths:', profilePicture.single || profilePicture.multiple);
             }
+    
             user = await userService.updateUser(userId, updatedData);
             res.status(200).json({
                 success: true,
@@ -158,7 +209,7 @@ class UserController {
             console.log(error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
-    }
+    };
     
     //delete user
     static async deleteUser(req, res) {
@@ -174,7 +225,7 @@ class UserController {
             console.log(error);
             res.status(500).json({  success: false ,message: `Internal Server Error...${error.message}` });
         }
-    }
+    };
 
     //change user password
     static async changePassword(req, res) {
@@ -197,7 +248,7 @@ class UserController {
             console.log(error);
             res.status(500).json({success: false , message: `Internal Server Error...${error.message}` });
         }
-    }
+    };
 
     //reset user password
     static async forgotPassword(req, res){

@@ -1,25 +1,30 @@
 import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema({
-  toUser: {
+  toUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User', 
-    //   required: true
     },
-  fromUser: { 
+    fromUserId: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'User', 
-    //   required: true 
     },
-  content: { 
+    message: { 
       type: String, 
-    //   required: true 
     },
-  notRead: { 
+    notRead: { 
       type: Boolean, 
       default: true 
     },
-  timestamp: { type: Date, default: Date.now },
+    type:{
+      type: String,
+      enum: ['User','Admin' ],
+      default: 'User'
+    },
+    timestamp: {
+     type: Date, 
+     default: Date.now 
+    },
 });
 
 const Message = mongoose.model('Message', messageSchema);

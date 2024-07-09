@@ -12,7 +12,6 @@ class PostService {
         }
     }
 
-
     //get post
     static async getPost(postId) {
         try {
@@ -49,6 +48,17 @@ class PostService {
         } catch (error) {
             console.error('Error deleting post:', error.message);
             throw error;
+        }
+    }
+
+    //update Post
+    static async updatePost(id, body) {
+        try {
+          console.log('Updating post with data:', body);
+          return await Post.findByIdAndUpdate(id, { $set: body }, { new: true });
+        } catch (error) {
+          console.error('Error updating user:', error.message);
+          throw error;
         }
     }
 

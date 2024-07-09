@@ -8,20 +8,20 @@ const postSchema = new mongoose.Schema({
     caption: { 
         type: String,
         },
-    postImage: {
+    postImage: [{
          type: String,
         required: false 
-    },
+    }],
     like: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null,
     } ],
-    comment: [{
-        type: mongoose.Schema.Types.ObjectId,
+    comments: {
+        type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
-        default: null,
-    } ],
+        default: []
+        },
     createdAt: {
          type: Date, 
          default: Date.now 
