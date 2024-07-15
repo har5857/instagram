@@ -38,7 +38,13 @@ class CommentService{
         }
     }
 
-    //Delete Comment
+    static async deleteComment(commentId){
+        try {
+            
+        } catch (error) {
+            
+        }
+    }
 
     
 

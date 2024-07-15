@@ -4,6 +4,7 @@ import Post from '../post/post.model.js';
 
 
 class CommentController {
+    //add comment
     static async addComment(req, res) {
         const { postId } = req.params;
         const senderId = req.user._id;
@@ -53,6 +54,20 @@ class CommentController {
         }
     }
 
+    //delete comment
+    static async deleteComment(req, res){
+        try {
+            const { commentId } = req.params;
+            let comment = await CommentService.getComment(commentId);
+            if(!comment){
+                return res.status(404).json({ message : `Comment Not Found`});
+            }
+            comment = await CommentService.deleteComment(commentId);
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
+        }
+    }
 }
 
 export default CommentController;

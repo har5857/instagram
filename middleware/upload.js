@@ -9,10 +9,8 @@ const __dirname = dirname(__filename);
 
 
 const uploadDir = path.join(__dirname, '..', 'uploads', 'profile_picture');
-// console.log('Upload directory:', uploadDir); 
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
-    // console.log('Upload directory created:', uploadDir); 
 }
 
 const storage = multer.diskStorage({
@@ -37,11 +35,15 @@ const upload = multer({
         if (extname && mimetype) {
             cb(null, true);
         } else {
-            req.fileValidationError = 'Only images allowed.....';
+            req.fileValidationError = 'Only images allowed...';
             cb(null, false);
         }
     }
-}).array('profilePicture', 3);
+}).fields([
+    { name: 'profilePic'},
+    { name: 'profilePics'}
+]);
+
 
 
 

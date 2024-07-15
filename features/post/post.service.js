@@ -15,13 +15,10 @@ class PostService {
     //get post
     static async getPost(postId) {
         try {
-            const post = await Post.find({ _id:postId});
-            if (!post) {
-                throw new Error('Post not found');
-            }
-            return { success: true, message:'post frtced successfully', data:post };
+            const post = await Post.findById(postId);
+            return post; 
         } catch (error) {
-            console.error('Error fetching posts:', error.message);
+            console.error('Error fetching post:', error);
             throw error;
         }
     }

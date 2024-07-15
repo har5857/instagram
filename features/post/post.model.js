@@ -8,15 +8,20 @@ const postSchema = new mongoose.Schema({
     caption: { 
         type: String,
         },
-    postImage: [{
-         type: String,
-        required: false 
-    }],
+    postImage:{
+        path: String, 
+    },
+    postImages:[{
+         path: String
+        }],
     like: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null,
     } ],
+    price: {
+        type: String
+    },
     comments: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',

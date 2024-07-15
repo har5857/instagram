@@ -13,7 +13,19 @@ class UserService {
 
     //get user by ID
     async getUserById(id) {
-            return await User.findById(id);
+        try {
+            const user = await User.findById(id);
+            if (!user) {
+                throw new Error(`User with ID ${id} not found.`);
+            }
+            return user;
+        } catch (error) {
+            throw new Error(`Error fetching user: ${error.message}`);
+        }
+    }
+
+    async getPictureById(pictureId){
+                return await User.findById(pictureId);
     }
 
     //get all users
@@ -43,10 +55,45 @@ class UserService {
         return await User.findByIdAndUpdate(userId, { role: role }, { new: true });
     }
 
+    //Delete Single Picture
+    async removePicture(pictureId){
+        return await User.findByIdAndDelete(pictureId);
+    }
+
     // search user 
-    async searchUser(filter, skip, limit) {
-        const users = await User.find(filter).skip(skip).limit(limit);
-        return { users, totalUsers: await User.countDocuments(filter) };
+    async  searchUsers(query, page, limit) {
+        const skip = (page - 1) * limit;
+        const usersQuery = User.find({
+            $or: [
+                { userName: new RegExp(query, 'i') },
+                { email: new RegExp(query, 'i') },
+                { bio: new RegExp(query, 'i') },
+                { accountType: new RegExp(query, 'i') }
+            ]
+        }).skip(skip).limit(parseInt(limit));
+    
+        const users = await usersQuery.exec();
+        const totalUsers = await User.countDocuments({
+            $or: [
+                { userName: new RegExp(query, 'i') },
+                { email: new RegExp(query, 'i') },
+                { bio: new RegExp(query, 'i') },
+                { accountType: new RegExp(query, 'i') }
+            ]
+        });
+        const totalPages = Math.ceil(totalUsers / limit);
+    
+        return {
+            success: true,
+            message: "Users retrieved Successfully",
+            pagination: {
+                page,
+                totalPages,
+                totalUsers,
+                limit
+            },
+            data: users
+        };
     }
 
 }

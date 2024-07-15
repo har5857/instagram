@@ -1,5 +1,6 @@
 import  { userRoles }  from '../config/enum.js';
 
+//Role Middleware
 export const roleMiddleware = (allowedRoles) => {
     return (req, res, next) => {
         if (!req.user || !allowedRoles.includes(req.user.role)) {

@@ -1,9 +1,9 @@
-import express from "express";
-import MessageController from "./message.controller.js";
-import { userVerifyToken } from "../../middleware/verifyToken.js";
+import socketController from '../message/message.controller.js';
 
-const router = express.Router();
+const socketRoutes = (io) => {
+    io.on('connection', socket => {
+        socketController(socket);
+    });
+};
 
-router.post('/send-message' , userVerifyToken, MessageController.sendMessage );
-
-export default router;
+export default socketRoutes;

@@ -30,7 +30,7 @@ router.post('/register-user',(req, res, next) => {
 },validateRegistration, UserController.registerUser);
 
 //login
-router.post('/login-user', validateLogin, UserController.loginUser);
+router.post('/login-user', validateLogin , UserController.loginUser);
 
 //Resend-otp 
 router.post('/resend-otp', UserController.resendOtp);
@@ -59,7 +59,7 @@ router.put('/update-user/:userId', (req, res, next) => {
 }, userVerifyToken, roleMiddleware([userRoles.ADMIN, userRoles.USER]), validateUpdate, UserController.updateUser);
 
 //delete user
-router.delete('/delete-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN]), UserController.deleteUser);
+router.delete('/delete-user/:userId', userVerifyToken, UserController.deleteUser);
 
 //changepassword
 router.put('/change-password', userVerifyToken, validatechangePassword, UserController.changePassword);
@@ -75,6 +75,12 @@ router.put('/assign-role/:userId', userVerifyToken, roleMiddleware([userRoles.AD
 
 //search user
 router.get('/search-user', UserController.searchUsers);
+
+//Remove single picture
+router.delete('/remove-Profile-Pics/:pictureId',userVerifyToken, UserController.removeProfilePics);
+
+//Remove single picture
+router.delete('/remove-Profile-Pic',userVerifyToken, UserController.removeProfilePic);
 
 export default router ; 
 

@@ -8,13 +8,28 @@ class PostController {
     static async uploadPost(req, res) {
         try {
                 const { caption } = req.body;
+                let postImage = null;
+                let postImages = [];
                 const baseURL = `${req.protocol}://${req.get('host')}`;
-                const postImagePath = req.files.map(file => `${baseURL}/uploads/post/${file.filename}`);
-                
+                if (req.files['postImage'] && req.files['postImage'].length > 1) {
+                    return res.status(400).json({ message: 'Only 1 file allowed for postImage.' });
+                }
+                if (req.files['postImage']){
+                    postImage = {
+                        path: `${baseURL}/uploads/post/${req.files['postImage'][0].filename}`
+                    };
+                }
+                if(req.files['postImages']){
+                    postImages = req.files['postImages'].map(file => ({
+                        path: `${baseURL}/uploads/profile_picture/${file.filename}`
+                    }));
+                }
                 const post = await PostService.addNewPost({
                     user :  req.user._id,
                     caption,
-                    postImage: postImagePath,
+                    postImage: postImage,
+                    postImages: postImages,
+                    ...req.body
                 });
                 res.status(201).json({ success: true, message: 'Post uploaded successfully', data: post });
         } catch (error) {

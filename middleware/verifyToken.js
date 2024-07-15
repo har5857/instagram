@@ -13,7 +13,7 @@ export const userVerifyToken = async (req, res, next) => {
     if(token){
         try {
             const verified = jwt.verify(token, process.env.JWT_SECRET);
-            const user = await User.findById(verified.userId);
+            const user = await User.findById(verified.userId) || await User.findById(verified.id);
             if (!user) {
                 return res.status(401).json({ message: 'User not found in database' });
             }

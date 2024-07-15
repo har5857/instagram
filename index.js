@@ -5,19 +5,29 @@ import router from './router.js';
 import path, { dirname } from 'path';
 import cors from'cors';
 import dotenv from 'dotenv';
-import UserService from './features/auth/user.service.js';
-const userService = new UserService();
 import { fileURLToPath } from 'url';
-import Message from './features/message/message.model.js';
+import session from 'express-session';
+import passport from './helper/passport.js';
+import authRoutes from './features/auth/auth.route.js';
+import socketRoutes from './features/message/message.route.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+import ngrok from'@ngrok/ngrok';
 
 dotenv.config();
 const app = express();
 app.use(cors())
 
 connectDB();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5555;
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true } 
+}));
+
 
 /*_ _ _ _ _ _ _ _ 
 
@@ -35,69 +45,16 @@ const io = new SocketIOServer(server,{
   },
 });
 
-io.on('connection', (socket) => {
-  console.log('A user connected');
+socketRoutes(io);
 
-  userService.getAllUsers()
-      .then(users => {
-          socket.emit('userList', users);
-      })
-      .catch(error => {
-          console.error('Error sending user list:', error);
-      });
+/*_ _ _ _ _ _ _ _ 
 
-    socket.on('sendMessage', async (data) => {
-        const { fromUserId, toUserId, message } = data;
+   Upload File
+  _ _ _ _ _ _ _ _
+*/
 
-        const newMessage = new Message({ fromUserId, toUserId, message });
-        await newMessage.save();
-
-        socket.emit('receiveMessage', { fromUserId, message, createdAt: newMessage.createdAt });
-    });
-
-    socket.on('getMessages', async (data) => {
-      const { userId } = data;
-      try {
-        const messages = await Message.find({ toUserId: userId, notRead: true });
-        socket.emit('userMessages', messages);
-      } catch (error) {
-        console.error('Error retrieving messages:', error);
-      }
-    });
-
-    socket.on('readMessage', async (data)=>{
-      const { messageId } = data;  
-      try {
-        const message = await Message.findByIdAndUpdate(messageId, { notRead: false },{ new: true });
-        socket.emit('userReadMessage', message);
-      } catch (error) {
-        console.error('Error retrieving messages:', error);
-      }
-      })
-
-    socket.on('getAllMessage', async (data) => {
-        const { userId } = data;
-        try {
-          const messages = await Message.find({ toUserId : userId });
-          socket.emit('userAllMessages', messages);
-        } catch (error) {
-          console.error('Error retrieving messages:', error);
-        }
-    })
-
-    socket.on('deleteMessage' , async (data) => {
-        const { messageId } = data;
-        try {
-          const message = await Message.findByIdAndDelete({ _id: messageId});
-        } catch (error) {
-          console.error('Error retrieving messages:', error);
-        }
-    })
-
-  socket.on('disconnect', () => {
-      console.log('A user disconnected');
-  });
-});
+const uploads = path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploads));
 
 /*_ _ _ _ _ _ _ _ 
 
@@ -116,16 +73,30 @@ app.use(bodyParser.json());
 
 app.use('/api', router);
 
-/*_ _ _ _ _ _ _ _ 
+app.use('/auth', authRoutes); 
 
-   Upload File
-  _ _ _ _ _ _ _ _
-*/
 
-const uploads = path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(uploads));
+// server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
-// socket
-server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// (async () => {
+//   const url = await ngrok.connect({
+//     addr: PORT,
+//     authtoken: process.env.NGROK_AUTHTOKEN,
+//   });
+//   console.log(`Ngrok tunnel established at: ${url}`);
+// })();
 
-export default io;
+
+
+server.listen(PORT , () => {
+  console.log(`Server started on port ${PORT}`);
+  // ngrok.connect({
+  //   authtoken: process.env.NGROK_AUTHTOKEN,
+  //   addr: PORT,
+  // }).then(ngrokUrl => {
+  //   console.log(`Ngrok tunnel established at: ${ngrokUrl}`);
+  // }).catch(error => {
+  //   console.error(`Error establishing Ngrok tunnel: ${error}`);
+  // });
+})
+
