@@ -61,6 +61,9 @@ router.put('/update-user/:userId', (req, res, next) => {
 //delete user
 router.delete('/delete-user/:userId', userVerifyToken, UserController.deleteUser);
 
+//active deactive user
+router.put('/active-deactive-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN]), UserController.activeDeactiveUser);
+
 //changepassword
 router.put('/change-password', userVerifyToken, validatechangePassword, UserController.changePassword);
 

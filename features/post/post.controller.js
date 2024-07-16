@@ -1,5 +1,7 @@
 import PostService from './post.service.js';
 const postService = new PostService();
+import NotificationService from '../notification/notification.service.js';
+const notificationService = new NotificationService();
 
 
 class PostController {
@@ -115,7 +117,8 @@ class PostController {
             if(!result.success){
                 return res.status(400).json({ success: false, message: result.message });
             }
-            res.status(200).json({success: true, message: result.message, data: result.data});
+            const Notification = await notificationService.sendPostLikeNotification(userId);
+            res.status(200).json({success: true, message: result.message, data: result.data , Notification});
         } catch (error) {
             console.error('Error  Add Like', error);
             res.status(500).json({ success: false, message: 'Internal Server Error' }); 

@@ -1,6 +1,7 @@
-
 import CommentService from './comment.service.js';
 import Post from '../post/post.model.js';
+import NotificationService from '../notification/notification.service.js';
+const notificationService = new NotificationService();
 
 
 class CommentController {
@@ -24,7 +25,8 @@ class CommentController {
             }
             post.comments.push(senderId);
             await post.save();
-            res.status(201).json({ success: true, message: 'Comment Added Successfully', data: comment });
+            const Notification = await notificationService.sendCommentPostNotification(senderId);
+            res.status(201).json({ success: true, message: 'Comment Added Successfully', data: comment , Notification});
         } catch (error) {
             console.error('Error Adding Comment', error);
             res.status(500).json({ success: false, message: 'Internal Server Error' });

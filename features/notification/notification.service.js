@@ -49,6 +49,32 @@ class NotificationService {
       }
   }
 
+  async sendPostLikeNotification(userId){
+    const receiver = await userService.getUserById(userId);
+    if(!receiver){
+      return { success: false, message: `User Not Found`};
+    }else{
+      const message = `${receiver.userName} liked Your Post`;
+      io.emit(`notification_${userId}`, { message});
+      const notification = new Notification({ user: userId , message});
+      await notification.save();
+      return { success: true, notification};
+    }
+  }
+
+   async sendCommentPostNotification(senderId){
+    const sender = await userService.getUserById(senderId);
+    if(!sender){
+      return { success: false, message:`User Not Found..`};
+    }else{
+      const message = `${sender.userName} Comment Your Post`;
+      io.emit(`notification_${senderId}`, {message});
+      const notification = new Notification({user: senderId, message});
+      await notification.save();
+      return{ success: true , notification};
+    }
+  }
+
   async readNotification(notificationId , senderId){
     const existingNotification = await Notification.findOneAndUpdate({user:senderId, _id: notificationId , isRead:true });
     if (!existingNotification) {

@@ -163,9 +163,13 @@ class UserController {
         try {
             const { email, password } = req.body;
             
-            let user = await userService.getUser({ email, isDelete: false });
+            let user = await userService.getUserByEmail(email);
             if (!user) {
                 return res.status(404).json({ message: 'Email Not Found' });
+            }
+            
+            if (user.isDelete) {
+                return res.status(403).json({ message: 'Your account is inactive. Please contact admin.' });
             }
             
             const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -176,7 +180,7 @@ class UserController {
             const otp = generateOtp();
             user.otp = otp;
             user.otpExpiry = new Date(Date.now() + 1 * 60 * 1000); 
-            
+        
             await user.save();
             
             const resetUrl = 'http://localhost:5555/Otp-verification';
@@ -185,12 +189,13 @@ class UserController {
             const templateName = 'otp';
             
             await sendEmail(user.email, subject, templateName, templateData);
+            
             return res.status(200).json({ success: true, message: 'OTP Sent Successfully', otp });
         } catch (error) {
             console.error('Error in loginUser:', error);
-            return res.status(500).json({ success: false, message: `Internal Server Error: ${error.message}` });
+            return res.status(500).json({ success: false, message: 'Internal Server Error' });
         }
-    };
+    }
     
     //Resend otp
     static async resendOtp(req, res) {
@@ -276,37 +281,6 @@ class UserController {
         }
     };
     
-    //get user information
-    static async getUser(req, res) {
-        try {
-            const { userId } = req.params;
-            const requestingUserId = req.user.id;
-            let user = await userService.getUserById(userId);
-            if (!user) {
-                return res.status(404).json({ message: 'User not found...' });
-            }
-            if (user.followers != requestingUserId && user.accountType === accountType.PRIVATE && userId !== requestingUserId){
-                const limitedUserInfo = {
-                    userName: user.userName,
-                    profilePic: user.profilePic,
-                    profilePics: user.profilePic,
-                    bio: user.bio,
-                    followersCount: user.followers.length,
-                    followingCount: user.following.length,
-                    postsCount: user.posts.length
-                };
-                return res.status(200).json({ success: true, message: 'User retrieved successfully', data: limitedUserInfo });
-            } else {
-                let userObj = user.toObject();
-                delete userObj.password;
-                return res.status(200).json({ success: true, message: 'User retrieved successfully....', data: userObj });
-            }
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
-        }
-    };
-
     //update user information
     static async updateUser(req, res) {
         try {
@@ -352,6 +326,41 @@ class UserController {
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
     };
+
+    //get user
+    static async getUser(req, res) {
+        try {
+            const { userId } = req.params;
+            const requestingUserId = req.user.id;
+            let user = await userService.getUserById(userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found...' });
+            }
+            if (!user.isDelete) {
+                if (user.followers != requestingUserId && user.accountType === accountType.PRIVATE && userId !== requestingUserId) {
+                    const limitedUserInfo = {
+                        userName: user.userName,
+                        profilePic: user.profilePic,
+                        profilePics: user.profilePic,
+                        bio: user.bio,
+                        followersCount: user.followers.length,
+                        followingCount: user.following.length,
+                        postsCount: user.posts.length
+                    };
+                    return res.status(200).json({ success: true, message: 'User retrieved successfully', data: limitedUserInfo });
+                } else {
+                    let userObj = user.toObject();
+                    delete userObj.password;
+                    return res.status(200).json({ success: true, message: 'User retrieved successfully....', data: userObj });
+                }
+            } else {
+                return res.status(404).json({ message: 'User not found...' });
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
+        }
+    }
     
     //delete user
     static async deleteUser(req, res) {
@@ -370,6 +379,34 @@ class UserController {
         }
     };
 
+    //active-deactive user
+    static async activeDeactiveUser(req, res) {
+        try {
+            const { userId } = req.params;
+            const { isDelete } = req.body;
+            let user = await userService.getUserById(userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found...' });
+            }
+            let updatedIsDelete;
+            if (isDelete.toLowerCase() === 'active') {
+                updatedIsDelete = false;
+            } else if (isDelete.toLowerCase() === 'inactive') {
+                updatedIsDelete = true;
+            } else {
+                return res.status(400).json({ message: 'Invalid isDelete value. Use "active" or "inactive".' });
+            }
+            user = await userService.updateUser(userId, { isDelete: updatedIsDelete });
+            res.status(200).json({
+                success: true,
+                message: updatedIsDelete ? 'User Deactivated Successfully...' : 'User Activated Successfully...'
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ success: false, message: `Internal Server Error: ${error.message}` });
+        }
+    }
+    
     //Remove ProfilePics 
     static async removeProfilePics(req, res) {
     try {
@@ -405,7 +442,7 @@ class UserController {
         console.error(error);
         res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
     }
-    }
+    };
 
     //Remove ProfilePic
     static async removeProfilePic(req, res) {
@@ -439,7 +476,7 @@ class UserController {
             console.error(error);
             res.status(500).json({ success: false, message: `Internal Server Error...${error.message}` });
         }
-    }
+    };
 
     //change user password
     static async changePassword(req, res) {
@@ -486,7 +523,7 @@ class UserController {
         console.error('Error sending password reset email:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
-    }
+    };
 
     //reset user password
     static  async resetPassword(req, res) {

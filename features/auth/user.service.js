@@ -24,6 +24,16 @@ class UserService {
         }
     }
 
+    //get-user-by-email
+    async getUserByEmail(email) {
+        try {
+            const user = await User.findOne({ email });
+            return user;
+        } catch (error) {
+            throw new Error(`Error fetching user by email: ${error.message}`);
+        }
+    }
+
     async getPictureById(pictureId){
                 return await User.findById(pictureId);
     }

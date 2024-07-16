@@ -10,7 +10,7 @@ passport.use(
     {
       clientID: env.google.clientId,
       clientSecret: env.google.clientSecret,
-      callbackURL: 'https://f22a-49-36-80-78.ngrok-free.app/auth/google/callback',
+      callbackURL: 'https://3aca-49-36-80-78.ngrok-free.app/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
