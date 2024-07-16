@@ -15,7 +15,6 @@ import { sendEmail } from '../../helper/email.js';
 const userService = new UserService();
 
 
-
 class UserController {
     //Register user
     // static async registerUser(req, res) {

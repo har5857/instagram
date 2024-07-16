@@ -123,7 +123,6 @@ class FriendRequestController {
         }
     
 }
-
 }
 
 export default FriendRequestController;

@@ -17,6 +17,7 @@ const env = {
     google: {
         clientId: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
+        callbackURL: process.env.CALLBACK_URL
     },
     razorpay: {
         keyId: process.env.RAZORPAY_KEY_ID,
