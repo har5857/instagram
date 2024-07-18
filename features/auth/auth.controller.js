@@ -20,12 +20,12 @@ const googleAuthCallback = (req, res, next) => {
       process.env.JWT_SECRET,
     );
     console.log('Generated token:', token);
-    res.redirect(`/auth/success?token=${token}`);
+    res.redirect(`https://16c4-49-36-80-78.ngrok-free.app/auth/success#token=${token}`);
   })(req, res, next);
 };
 
 const authSuccess = async (req, res) => {
-  const token = req.query.token;
+  const { token } = req.body; // Extract token from request body
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
@@ -45,8 +45,27 @@ const authFailure = (req, res) => {
   res.status(401).send('Error during authentication');
 };
 
+
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; 
+  if (!token) {
+    return res.status(401).json({ message: 'Access Denied. No Token Provided.' });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (ex) {
+    res.status(400).json({ message: 'Invalid Token' });
+  }
+};
+
+
+
 export default {
   googleAuthCallback,
   authSuccess,
   authFailure,
+  authMiddleware
 };

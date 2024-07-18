@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    token:{
+      type: String
+    },
     contactNumber: {
       type: Number,
       require: true,

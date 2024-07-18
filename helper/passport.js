@@ -1,10 +1,11 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../features/auth/user.model.js';
-import env from '../config/env.js'
+import jwt from 'jsonwebtoken';
+import env from '../config/env.js';
 
+// dotenv.config();
 
-//Passport Integration
 passport.use(
   new GoogleStrategy(
     {
@@ -41,16 +42,22 @@ passport.use(
               profilePics: [],
             });
             await newUser.save();
-            return done(null, newUser);
+            user = newUser; 
           } else {
             user.googleId = profile.id;
             await user.save();
           }
         }
 
-        return done(null, user);
+        const token = jwt.sign(
+          { id: user._id, email: user.email },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' }
+        );
+
+        done(null, user, token); 
       } catch (err) {
-        return done(err, false, { message: 'Internal Server Error' });
+        done(err, false, { message: 'Internal Server Error' });
       }
     }
   )

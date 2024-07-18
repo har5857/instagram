@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
 import passport from './helper/passport.js';
+import cookieParser from 'cookie-parser';
 import authRoutes from './features/auth/auth.route.js';
 import socketRoutes from './features/message/message.route.js';
 const __filename = fileURLToPath(import.meta.url);
@@ -16,7 +17,10 @@ import ngrok from'@ngrok/ngrok';
 
 dotenv.config();
 const app = express();
-app.use(cors())
+// app.use(cors())
+
+
+app.use(cookieParser());
 
 connectDB();
 const PORT = process.env.PORT || 5555;
@@ -37,13 +41,18 @@ app.use(session({
 import http from 'http';
 import { Server as SocketIOServer  } from 'socket.io';
 
+
+
 const server = http.createServer(app);
 const io = new SocketIOServer(server,{
-  cors: {
-    origin: "http://localhost:5555",
-    methods: [ "GET","POST" ],
+  cors : {
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   },
 });
+
+app.use(cors());
 
 socketRoutes(io);
 
@@ -76,27 +85,9 @@ app.use('/api', router);
 app.use('/auth', authRoutes); 
 
 
-// server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
-
-// (async () => {
-//   const url = await ngrok.connect({
-//     addr: PORT,
-//     authtoken: process.env.NGROK_AUTHTOKEN,
-//   });
-//   console.log(`Ngrok tunnel established at: ${url}`);
-// })();
-
-
-
 server.listen(PORT , () => {
   console.log(`Server started on port ${PORT}`);
-  // ngrok.connect({
-  //   authtoken: process.env.NGROK_AUTHTOKEN,
-  //   addr: PORT,
-  // }).then(ngrokUrl => {
-  //   console.log(`Ngrok tunnel established at: ${ngrokUrl}`);
-  // }).catch(error => {
-  //   console.error(`Error establishing Ngrok tunnel: ${error}`);
-  // });
+
 })
 
+export default io;
