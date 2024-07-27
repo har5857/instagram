@@ -85,5 +85,7 @@ router.delete('/remove-Profile-Pics/:pictureId',userVerifyToken, UserController.
 //Remove single picture
 router.delete('/remove-Profile-Pic',userVerifyToken, UserController.removeProfilePic);
 
+router.get('/google', UserController.googleLogin);
+
 export default router ; 
 

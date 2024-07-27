@@ -1,15 +1,11 @@
 import express from 'express';
 import passport from 'passport';
-import authController  from './auth.controller.js';
-// import jwt from 'jsonwebtoken';
-
+import authController from './auth.controller.js';
 
 const router = express.Router();
 
 router.use(passport.initialize());
 router.use(passport.session());
-
-
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -19,6 +15,6 @@ router.get('/success', authController.authSuccess);
 
 router.get('/failure', authController.authFailure);
 
-router.get('/profile',authController.authMiddleware, authController.authSuccess);
+router.get('/profile', authController.authMiddleware, authController.authSuccess);
 
 export default router;

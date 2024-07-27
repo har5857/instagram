@@ -3,13 +3,16 @@ import jwt from 'jsonwebtoken';
 import UserService from './user.service.js';
 import config from '../../config/env.js';
 import path from 'path';
+import User from './user.model.js';
 import { userRoles } from '../../config/enum.js';
+import { OAuth2Client } from 'google-auth-library';
+const client = new OAuth2Client(config.googleClientId);
 import fs from 'fs';
 // import path from 'path';
 import {  
     accountType
 } from '../../config/enum.js';
-import { generateOtp } from '../../helper/otpGounrater.js';
+import { generateOTP } from '../../helper/otpGounrater.js';
 import { sendEmail } from '../../helper/email.js';
 
 const userService = new UserService();
@@ -176,7 +179,7 @@ class UserController {
                 return res.status(400).json({ message: 'Password is not correct' });
             }
             
-            const otp = generateOtp();
+            const otp = generateOTP();
             user.otp = otp;
             user.otpExpiry = new Date(Date.now() + 1 * 60 * 1000); 
         
@@ -584,6 +587,46 @@ class UserController {
         } catch (error) {
             console.error('Error in searchUsers controller:', error);
             res.status(500).json({ success: false, message: `Internal Server Error: ${error.message}` });
+        }
+    };
+
+    static async  googleLogin(req, res) {
+        const { token } = req.body;
+      
+        try {
+          const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: config.googleClientId,
+          });
+      
+          const payload = ticket.getPayload();
+          const { email, name, picture } = payload;
+      
+          let user = await User.findOne({ email });
+      
+          if (!user) {
+            user = new User({
+              userName: name,
+              email: email,
+              profilePic: picture,
+            });
+            await user.save();
+          } else {
+            user.profilePic = picture;
+            await user.save();
+          }
+      
+          const jwtToken = jwt.sign(
+            { id: user._id, email: user.email },
+            config.jwtSecret,
+            { expiresIn: '1h' } 
+          );
+      
+          res.json({ token: jwtToken });
+      
+        } catch (error) {
+          console.error('Error during Google login:', error);
+          res.status(500).json({ message: 'Internal Server Error' });
         }
     };
      

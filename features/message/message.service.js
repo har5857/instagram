@@ -19,6 +19,24 @@ const messageService = {
             throw new Error('Error fetching messages');
         }
     },
+
+    getMessagesByUserIdCount: async (touserId , fromuserId) => {
+        try {
+            return await Message.find({ toUserId: touserId , fromUserId:fromuserId , notRead: true });
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            throw new Error('Error fetching messages');
+        }
+    },
+
+    getAllMessage: async (userId) => {
+        try {
+            return await Message.find({ toUserId: userId });
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            throw new Error('Error fetching messages');
+        }
+    },
    
 };
 

@@ -11,7 +11,7 @@ passport.use(
     {
       clientID: env.google.clientId,
       clientSecret: env.google.clientSecret,
-      callbackURL: env.google.callbackURL,
+      callbackURL:'http://localhost:5555/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -51,8 +51,7 @@ passport.use(
 
         const token = jwt.sign(
           { id: user._id, email: user.email },
-          process.env.JWT_SECRET,
-          { expiresIn: '1h' }
+          process.env.JWT_SECRET
         );
 
         done(null, user, token); 

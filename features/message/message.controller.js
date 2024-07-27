@@ -4,7 +4,6 @@ import MessageService from './message.service.js';
 import Message from './message.model.js';
 import io from '../../index.js';
 
-
 const users= {}
 
 const socketController = (socket) => {
@@ -25,7 +24,6 @@ const socketController = (socket) => {
     //  sending messages
     socket.on('sendMessage', async (data) => {
         const { fromUserId, toUserId, message } = data;
-
         try {
             const fromUserExists = await userService.getUserById(fromUserId);
             if (!fromUserExists) {
@@ -40,26 +38,24 @@ const socketController = (socket) => {
             console.log("Successful", fromUserId, toUserId, message);
 
             const newMessage = await MessageService.saveMessage(fromUserId, toUserId, message);
-            console.log("Emitting receiveMessage event", { fromUserId, toUserId, message, createdAt: newMessage.createdAt });
+            console.log("receiveMessage event", { fromUserId, toUserId, message, createdAt: newMessage.createdAt });
 
             io.emit('receiveMessage', { fromUserId, toUserId, message, createdAt: newMessage.createdAt });
-
         } catch (error) {
             console.error('Error sending message:', error.message);
             socket.emit('sendMessageError', { error: error.message });
         }
     });
-    
+
     // retrieving messages 
     socket.on('getMessages', async (data) => {
-        const { userId } = data;
+        const { touserId , fromuserId } = data;
         try {
-            const userIdExists = await userService.getUserById(userId);
+            const userIdExists = await userService.getUserById(touserId);
             if (!userIdExists) {
                 throw new Error(`User with ID ${userId} does not exist.`);
             }
-
-            const messages = await MessageService.getMessagesByUserId( userId );
+            const messages = await MessageService.getMessagesByUserIdCount( touserId, fromuserId );
             socket.emit('userMessages', messages);
         } catch (error) {
             console.error('Error retrieving messages:', error);
@@ -69,13 +65,14 @@ const socketController = (socket) => {
 
     // messages Count
     socket.on('countMessage', async (data) => {
-        const { userId } = data;
+        const { touserId , fromuserId } = data;
         try {
-            const userIdExists = await userService.getUserById(userId);
-            if (!userIdExists) {
-                throw new Error(`User with Id ${userId} does not exist.`);
+            const touserIdExists = await userService.getUserById(touserId);
+            if (!touserIdExists) {
+
+                throw new Error(`User with Id ${touserId} does not exist.`);
             }
-            const messages = await MessageService.getMessagesByUserId(userId);
+            const messages = await MessageService.getMessagesByUserIdCount(touserId, fromuserId);
             const unreadMessages = messages.filter(message => message.notRead === true);
             const unreadCount = unreadMessages.length;
     
@@ -100,7 +97,7 @@ const socketController = (socket) => {
     });
 
     // retrieving all messages 
-    socket.on('getAllMessages', async (data) => {
+    socket.on('getAllMessage', async (data) => {
         const { userId } = data;
 
         try {
@@ -109,7 +106,8 @@ const socketController = (socket) => {
                 throw new Error(`User with ID ${userId} does not exist.`);
             }
 
-            const messages = await Message.find({ toUserId: userId });
+            // const messages = await Message.find({ toUserId: userId });
+            const messages = await MessageService.getAllMessage(userId);
             socket.emit('userAllMessages', messages);
         } catch (error) {
             console.error('Error retrieving all messages:', error);
