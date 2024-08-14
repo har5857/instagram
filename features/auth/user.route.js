@@ -1,91 +1,140 @@
-import express from 'express';
-import UserController from './user.controller.js';
+import express from "express";
+import UserController from "./user.controller.js";
 import {
-    validateUpdate,
-    validateRegistration,
-    validateLogin,
-    validatechangePassword,
-    validateverifyOtp
-} from './user.validation.js';
-import { userVerifyToken } from '../../middleware/verifyToken.js';
-import upload from '../../middleware/upload.js';
-import { roleMiddleware } from '../../middleware/roleMiddleware.js';
-import { userRoles } from '../../config/enum.js';
-import multer from 'multer';
+  validateUpdate,
+  validateRegistration,
+  validateLogin,
+  validatechangePassword,
+  validateverifyOtp,
+} from "./user.validation.js";
+import { userVerifyToken } from "../../middleware/verifyToken.js";
+import upload from "../../middleware/upload.js";
+import { roleMiddleware } from "../../middleware/roleMiddleware.js";
+import { userRoles } from "../../config/enum.js";
+import multer from "multer";
 
 const router = express.Router();
 
 //register
-router.post('/register-user',(req, res, next) => {
+router.post(
+  "/register-user",
+  (req, res, next) => {
     upload(req, res, function (err) {
-        if (req.fileValidationError) {
-            return res.status(400).json({ message: req.fileValidationError });
-        } else if (err instanceof multer.MulterError) {
-            return res.status(400).json({ message: err.message });
-        } else if (err) {
-            return res.status(400).json({ message: 'Only images allowed' });
-        }
-        next();
+      if (req.fileValidationError) {
+        return res.status(400).json({ message: req.fileValidationError });
+      } else if (err instanceof multer.MulterError) {
+        return res.status(400).json({ message: err.message });
+      } else if (err) {
+        return res.status(400).json({ message: "Only images allowed" });
+      }
+      next();
     });
-},validateRegistration, UserController.registerUser);
+  },
+  validateRegistration,
+  UserController.registerUser
+);
 
 //login
-router.post('/login-user', validateLogin , UserController.loginUser);
+router.post("/login-user", validateLogin, UserController.loginUser);
 
-//Resend-otp 
-router.post('/resend-otp', UserController.resendOtp);
+//Resend-otp
+router.post("/resend-otp", UserController.resendOtp);
 
 // otp-verify
-router.post('/varify-otp',validateverifyOtp, UserController.verifyOtp);
+router.post("/varify-otp", validateverifyOtp, UserController.verifyOtp);
 
 //get all users
-router.get('/get-all-user', userVerifyToken , roleMiddleware([userRoles.ADMIN]), UserController.getAllUser);
+router.get(
+  "/get-all-user",
+  userVerifyToken,
+  roleMiddleware([userRoles.ADMIN]),
+  UserController.getAllUser
+);
 
 //get user
-router.get('/get-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN , userRoles.USER]), UserController.getUser);
+router.get(
+  "/get-user/:userId",
+  userVerifyToken,
+  roleMiddleware([userRoles.ADMIN, userRoles.USER]),
+  UserController.getUser
+);
 
 //update user
-router.put('/update-user/:userId', (req, res, next) => {
+router.put(
+  "/update-user/:userId",
+  (req, res, next) => {
     upload(req, res, function (err) {
-        if (req.fileValidationError) {
-            return res.status(400).json({ message: req.fileValidationError });
-        } else if (err instanceof multer.MulterError) {
-            return res.status(400).json({ message: err.message });
-        } else if (err) {
-            return res.status(400).json({ message: 'Only images allowed' });
-        }
-        next();
+      if (req.fileValidationError) {
+        return res.status(400).json({ message: req.fileValidationError });
+      } else if (err instanceof multer.MulterError) {
+        return res.status(400).json({ message: err.message });
+      } else if (err) {
+        return res.status(400).json({ message: "Only images allowed" });
+      }
+      next();
     });
-}, userVerifyToken, roleMiddleware([userRoles.ADMIN, userRoles.USER]), validateUpdate, UserController.updateUser);
+  },
+  userVerifyToken,
+  roleMiddleware([userRoles.ADMIN, userRoles.USER]),
+  validateUpdate,
+  UserController.updateUser
+);
 
 //delete user
-router.delete('/delete-user/:userId', userVerifyToken, UserController.deleteUser);
+router.delete(
+  "/delete-user/:userId",
+  userVerifyToken,
+  UserController.deleteUser
+);
 
 //active deactive user
-router.put('/active-deactive-user/:userId', userVerifyToken,roleMiddleware([userRoles.ADMIN]), UserController.activeDeactiveUser);
+router.put(
+  "/active-deactive-user/:userId",
+  userVerifyToken,
+  roleMiddleware([userRoles.ADMIN]),
+  UserController.activeDeactiveUser
+);
 
 //changepassword
-router.put('/change-password', userVerifyToken, validatechangePassword, UserController.changePassword);
+router.put(
+  "/change-password",
+  userVerifyToken,
+  validatechangePassword,
+  UserController.changePassword
+);
 
 //forgotpassword
-router.post('/forgot-password', UserController.forgotPassword);
+router.post("/forgot-password", UserController.forgotPassword);
 
 //resetpassword
-router.post('/reset-password', UserController.resetPassword);
+router.post("/reset-password", UserController.resetPassword);
 
 //Assign-user-role
-router.put('/assign-role/:userId', userVerifyToken, roleMiddleware([userRoles.ADMIN]), UserController.assignUserRole);
+router.put(
+  "/assign-role/:userId",
+  userVerifyToken,
+  roleMiddleware([userRoles.ADMIN]),
+  UserController.assignUserRole
+);
 
 //search user
-router.get('/search-user', UserController.searchUsers);
+router.get("/search-user", UserController.searchUsers);
 
 //Remove single picture
-router.delete('/remove-Profile-Pics/:pictureId',userVerifyToken, UserController.removeProfilePics);
+router.delete(
+  "/remove-Profile-Pics/:pictureId",
+  userVerifyToken,
+  UserController.removeProfilePics
+);
 
 //Remove single picture
-router.delete('/remove-Profile-Pic',userVerifyToken, UserController.removeProfilePic);
+router.delete(
+  "/remove-Profile-Pic",
+  userVerifyToken,
+  UserController.removeProfilePic
+);
 
-router.get('/google', UserController.googleLogin);
+//google login
+router.post("/google", UserController.googleLogin);
 
-export default router ; 
-
+export default router;

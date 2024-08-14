@@ -1,54 +1,50 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import connectDB from './helper/dbConnection.js';
-import router from './router.js'; 
-import path, { dirname } from 'path';
-import cors from'cors';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import session from 'express-session';
-import passport from './helper/passport.js';
-import cookieParser from 'cookie-parser';
-import authRoutes from './features/auth/auth.route.js';
-import socketRoutes from './features/message/message.route.js';
+import express from "express";
+import bodyParser from "body-parser";
+import connectDB from "./helper/dbConnection.js";
+import router from "./router.js";
+import path, { dirname } from "path";
+import cors from "cors";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import session from "express-session";
+import cookieParser from "cookie-parser";
+import socketRoutes from "./features/message/message.route.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-import ngrok from'@ngrok/ngrok';
+import ngrok from "@ngrok/ngrok";
 
 dotenv.config();
 const app = express();
 // app.use(cors())
-
 
 app.use(cookieParser());
 
 connectDB();
 const PORT = process.env.PORT || 5555;
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true } 
-}));
-
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true },
+  })
+);
 
 /*_ _ _ _ _ _ _ _ 
 
    Npm socket.Io 
   _ _ _ _ _ _ _ _
 */
-import http from 'http';
-import { Server as SocketIOServer  } from 'socket.io';
-
-
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
 
 const server = http.createServer(app);
-const io = new SocketIOServer(server,{
-  cors : {
+const io = new SocketIOServer(server, {
+  cors: {
     origin: "*",
     methods: ["GET", "POST"],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ["Content-Type", "Authorization"],
   },
 });
 
@@ -62,8 +58,8 @@ socketRoutes(io);
   _ _ _ _ _ _ _ _
 */
 
-const uploads = path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(uploads));
+const uploads = path.join(__dirname, "uploads");
+app.use("/uploads", express.static(uploads));
 
 /*_ _ _ _ _ _ _ _ 
 
@@ -73,21 +69,16 @@ app.use('/uploads', express.static(uploads));
 // import cron from 'node-cron';
 // import sendMail from './features/cron/testMailcron.js';
 
-// cron.schedule("*/1 * * * *", function() { 
-//     sendMail(); 
-//     }); 
-
+// cron.schedule("*/1 * * * *", function() {
+//     sendMail();
+//     });
 
 app.use(bodyParser.json());
 
-app.use('/api', router);
+app.use("/api", router);
 
-app.use('/auth', authRoutes); 
-
-
-server.listen(PORT , () => {
+server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
-
-})
+});
 
 export default io;

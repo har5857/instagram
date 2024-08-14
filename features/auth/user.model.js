@@ -2,13 +2,12 @@ import mongoose from "mongoose";
 import { accountType, gender, userRoles } from "../../config/enum.js";
 import { request } from "http";
 
-
 const userSchema = new mongoose.Schema(
   {
     userName: {
-       type: String, 
-       require: true 
-      },
+      type: String,
+      require: true,
+    },
     email: {
       type: String,
       required: true,
@@ -23,15 +22,15 @@ const userSchema = new mongoose.Schema(
     },
     profilePics: [
       {
-        path: String
-      }
+        path: String,
+      },
     ],
     bio: {
       type: String,
       default: null,
     },
-    token:{
-      type: String
+    token: {
+      type: String,
     },
     contactNumber: {
       type: Number,
